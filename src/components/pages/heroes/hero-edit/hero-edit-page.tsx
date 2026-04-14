@@ -1,13 +1,14 @@
+import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
 import { Button, Segmented, Select, Space } from 'antd';
 import { CloseOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { CultureData, EnvironmentData, OrganizationData, UpbringingData } from '@/data/culture-data';
-import { Feature, FeatureData } from '@/models/feature';
+import { Feature, FeatureClassAbilityData, FeatureData } from '@/models/feature';
 import { Hero, HeroEditTab } from '@/models/hero';
 import { useMemo, useState } from 'react';
 import { Ancestry } from '@/models/ancestry';
 import { AncestrySection } from '@/components/pages/heroes/hero-edit/ancestry-section/ancestry-section';
-import { AppFooter } from '@/components/panels/app-footer/app-footer';
 import { AppHeader } from '@/components/panels/app-header/app-header';
+import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { Career } from '@/models/career';
 import { CareerSection } from '@/components/pages/heroes/hero-edit/career-section/career-section';
 import { Characteristic } from '@/enums/characteristic';
@@ -51,11 +52,7 @@ interface Props {
 	heroes: Hero[];
 	sourcebooks: Sourcebook[];
 	options: Options;
-	highlightAbout: boolean;
-	showReference: () => void;
-	showRoll: () => void;
-	showAbout: () => void;
-	showSettings: () => void;
+	params: FooterParams;
 	saveChanges: (hero: Hero) => void;
 	importSourcebook: (sourcebook: Sourcebook) => void;
 }
@@ -76,7 +73,7 @@ export const HeroEditPage = (props: Props) => {
 				return PageState.Blank;
 			case 'ancestry':
 				if (hero.ancestry) {
-					return (hero.ancestry.features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero)).length > 0) ? PageState.InProgress : PageState.Completed;
+					return hero.ancestry.features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero, props.sourcebooks)).length > 0 ? PageState.InProgress : PageState.Completed;
 				} else {
 					return PageState.NotStarted;
 				}
@@ -96,13 +93,13 @@ export const HeroEditPage = (props: Props) => {
 					if (hero.culture.upbringing) {
 						features.push(hero.culture.upbringing);
 					}
-					return (features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero)).length > 0) ? PageState.InProgress : PageState.Completed;
+					return features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero, props.sourcebooks)).length > 0 ? PageState.InProgress : PageState.Completed;
 				} else {
 					return PageState.NotStarted;
 				}
 			case 'career':
 				if (hero.career) {
-					return (hero.career.features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero)).length > 0) || !hero.career.incitingIncidents.selected ? PageState.InProgress : PageState.Completed;
+					return hero.career.features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero, props.sourcebooks)).length > 0 || !hero.career.incitingIncidents.selected ? PageState.InProgress : PageState.Completed;
 				} else {
 					return PageState.NotStarted;
 				}
@@ -126,13 +123,13 @@ export const HeroEditPage = (props: Props) => {
 								.filter(lvl => lvl.level <= level)
 								.forEach(lvl => features.push(...lvl.features));
 						});
-					return (features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero)).length > 0) ? PageState.InProgress : PageState.Completed;
+					return features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero, props.sourcebooks)).length > 0 ? PageState.InProgress : PageState.Completed;
 				} else {
 					return PageState.NotStarted;
 				}
 			case 'complication':
 				if (hero.complication) {
-					return (hero.complication.features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero)).length > 0) ? PageState.InProgress : PageState.Completed;
+					return hero.complication.features.filter(f => FeatureLogic.isChoice(f)).filter(f => !FeatureLogic.isChosen(f, hero, props.sourcebooks)).length > 0 ? PageState.InProgress : PageState.Completed;
 				} else {
 					return PageState.Optional;
 				}
@@ -332,6 +329,18 @@ export const HeroEditPage = (props: Props) => {
 		const heroCopy = Utils.copy(hero);
 		if (heroCopy.class) {
 			heroCopy.class.subclasses.filter(sc => sc.id === subclassID).forEach(sc => sc.selected = false);
+
+			// Remove any abilities that come from this subclass
+			const subclass = heroCopy.class.subclasses.find(sc => sc.id === subclassID);
+			if (subclass) {
+				const abilityIDs = subclass.abilities.map(a => a.id);
+				HeroLogic.getFeatures(heroCopy)
+					.filter(f => f.feature.type === FeatureType.ClassAbility)
+					.forEach(f => {
+						const data = f.feature.data as FeatureClassAbilityData;
+						data.selectedIDs = data.selectedIDs.filter(id => !abilityIDs.includes(id));
+					});
+			}
 		}
 		setHero(heroCopy);
 		setDirty(true);
@@ -606,14 +615,13 @@ export const HeroEditPage = (props: Props) => {
 		<ErrorBoundary>
 			<div className='hero-edit-page'>
 				<AppHeader subheader='Hero Builder'>
-					<SearchBox disabled={!allowSearch()} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-					<div className='divider' />
-					<Button icon={<SaveOutlined />} type='primary' disabled={!dirty} onClick={saveChanges}>
-						Save Changes
-					</Button>
-					<Button icon={<CloseOutlined />} onClick={() => navigation.goToHeroView(heroID!)}>
-						Cancel
-					</Button>
+					<ButtonGroup
+						buttons={[
+							{ type: 'control', control: <SearchBox disabled={!allowSearch()} searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> },
+							{ type: 'button', label: isSmall ? undefined : 'Save Changes', icon: <SaveOutlined />, primary: true, disabled: !dirty, onClick: saveChanges },
+							{ type: 'button', label: isSmall ? undefined : 'Cancel', icon: <CloseOutlined />, onClick: () => navigation.goToHeroView(heroID!) }
+						]}
+					/>
 				</AppHeader>
 				<ErrorBoundary>
 					<div className={isSmall ? 'hero-edit-page-content small' : 'hero-edit-page-content'}>
@@ -623,11 +631,8 @@ export const HeroEditPage = (props: Props) => {
 				</ErrorBoundary>
 				<AppFooter
 					page='heroes'
-					highlightAbout={props.highlightAbout}
-					showReference={props.showReference}
-					showRoll={props.showRoll}
-					showAbout={props.showAbout}
-					showSettings={props.showSettings}
+					options={props.options}
+					params={props.params}
 				/>
 			</div>
 		</ErrorBoundary>

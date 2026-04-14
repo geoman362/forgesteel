@@ -1,5 +1,5 @@
 import { Alert, Button, Flex, Popover, Select, Space, Tabs } from 'antd';
-import { CaretDownOutlined, CaretUpOutlined, DownOutlined, EditFilled, EditOutlined, EllipsisOutlined, FilterFilled, FilterOutlined, InfoCircleOutlined, MinusCircleOutlined, PlusCircleOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { CaretDownOutlined, CaretUpOutlined, DownOutlined, EditFilled, EditOutlined, EllipsisOutlined, FilterFilled, FilterOutlined, InfoCircleOutlined, MinusCircleOutlined, PlusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, useDroppable } from '@dnd-kit/core';
 import { Encounter, EncounterGroup, EncounterObjective, TerrainSlot } from '@/models/encounter';
 import { Fragment, ReactNode, useState } from 'react';
@@ -29,7 +29,7 @@ import { MonsterFilterPanel } from '@/components/panels/monster-filter/monster-f
 import { MonsterGroup } from '@/models/monster-group';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
-import { NameGenerator } from '@/utils/name-generator';
+import { NameDescEditPanel } from '@/components/panels/edit/name-desc-edit/name-desc-edit-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Options } from '@/models/options';
 import { PanelMode } from '@/enums/panel-mode';
@@ -57,11 +57,37 @@ interface Props {
 
 export const EncounterEditPanel = (props: Props) => {
 	const [ encounter, setEncounter ] = useState<Encounter>(props.encounter);
+	const [ activeLeftTabKey, setActiveLeftTabKey ] = useState<string>('encounter');
+	const [ activeRightTabKey, setActiveRightTabKey ] = useState<string>('monsters');
 	const [ filterVisible, setFilterVisible ] = useState<boolean>(false);
 	const [ monsterFilter, setMonsterFilter ] = useState<MonsterFilter>(FactoryLogic.createMonsterFilter());
 	const [ terrainFilter, setTerrainFilter ] = useState<TerrainFilter>(FactoryLogic.createTerrainFilter());
 	const [ draggedMonster, setDraggedMonster ] = useState<Monster | null>(null);
 	const [ draggedTerrain, setDraggedTerrain ] = useState<Terrain | null>(null);
+
+	const switchLeftTab = (key: string) => {
+		setActiveLeftTabKey(key);
+		switch (key) {
+			case 'monsters':
+				setActiveRightTabKey('monsters');
+				break;
+			case 'terrain':
+				setActiveRightTabKey('terrain');
+				break;
+		}
+	};
+
+	const switchRightTab = (key: string) => {
+		setActiveRightTabKey(key);
+		switch (key) {
+			case 'monsters':
+				setActiveLeftTabKey('monsters');
+				break;
+			case 'terrain':
+				setActiveLeftTabKey('terrain');
+				break;
+		}
+	};
 
 	const addMonster = (monster: Monster, encounterGroupID: string | null) => {
 		const copy = Utils.copy(encounter);
@@ -81,6 +107,8 @@ export const EncounterEditPanel = (props: Props) => {
 			group.slots.push(FactoryLogic.createEncounterSlot(monster.id));
 			copy.groups.push(group);
 		}
+
+		copy.groups = copy.groups.filter(g => g.slots.length > 0);
 
 		setEncounter(copy);
 		props.onChange(copy);
@@ -107,36 +135,19 @@ export const EncounterEditPanel = (props: Props) => {
 	};
 
 	const getNameAndDescriptionSection = () => {
-		const setName = (value: string) => {
+		const onChange = (name: string, desc: string) => {
 			const copy = Utils.copy(encounter);
-			copy.name = value;
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		const setDescription = (value: string) => {
-			const copy = Utils.copy(encounter);
-			copy.description = value;
+			copy.name = name;
+			copy.description = desc;
 			setEncounter(copy);
 			props.onChange(copy);
 		};
 
 		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<HeaderText>Name</HeaderText>
-				<Space.Compact style={{ width: '100%' }}>
-					<TextInput
-						status={encounter.name === '' ? 'warning' : ''}
-						placeholder='Name'
-						allowClear={true}
-						value={encounter.name}
-						onChange={setName}
-					/>
-					<Button icon={<ThunderboltOutlined />} onClick={() => setName(NameGenerator.generateName())} />
-				</Space.Compact>
-				<HeaderText>Description</HeaderText>
-				<MarkdownEditor value={encounter.description} onChange={setDescription} />
-			</Space>
+			<NameDescEditPanel
+				element={encounter}
+				onChange={onChange}
+			/>
 		);
 	};
 
@@ -332,7 +343,7 @@ export const EncounterEditPanel = (props: Props) => {
 				}
 				{
 					encounter.groups.length === 0 ?
-						<div className='ds-text dimmed-text centered-text'>None</div>
+						<div className='ds-text dimmed-text centered-text'>Add a monster from the list on the right.</div>
 						: null
 				}
 			</Space>
@@ -780,9 +791,14 @@ export const EncounterEditPanel = (props: Props) => {
 	const onDragStart = (event: DragStartEvent) => {
 		const data = event.active.data.current as { type: string, element: Element };
 		switch (data.type) {
-			case 'monster':
+			case 'monster': {
 				setDraggedMonster(data.element as Monster);
+				const copy = Utils.copy(encounter);
+				copy.groups.push(FactoryLogic.createEncounterGroup());
+				setEncounter(copy);
+				props.onChange(copy);
 				break;
+			}
 			case 'terrain':
 				setDraggedTerrain(data.element as Terrain);
 				break;
@@ -792,12 +808,22 @@ export const EncounterEditPanel = (props: Props) => {
 	const onDragCancel = () => {
 		setDraggedMonster(null);
 		setDraggedTerrain(null);
+
+		const copy = Utils.copy(encounter);
+		copy.groups = copy.groups.filter(g => g.slots.length > 0);
+		setEncounter(copy);
+		props.onChange(copy);
 	};
 
 	const onDragEnd = (event: DragEndEvent) => {
 		if (draggedMonster && event.over) {
 			const groupID = event.over.id.toString();
 			addMonster(draggedMonster, groupID);
+		} else {
+			const copy = Utils.copy(encounter);
+			copy.groups = copy.groups.filter(g => g.slots.length > 0);
+			setEncounter(copy);
+			props.onChange(copy);
 		}
 
 		if (draggedTerrain && event.over) {
@@ -820,36 +846,38 @@ export const EncounterEditPanel = (props: Props) => {
 						<Tabs
 							items={[
 								{
-									key: '1',
+									key: 'encounter',
 									label: 'Encounter',
 									children: getNameAndDescriptionSection()
 								},
 								{
-									key: '2',
+									key: 'monsters',
 									label: 'Monsters',
 									children: getMonstersSection()
 								},
 								{
-									key: '3',
+									key: 'terrain',
 									label: 'Terrain',
 									children: getTerrainSection()
 								},
 								{
-									key: '4',
+									key: 'objective',
 									label: 'Objective',
 									children: getObjectiveSection()
 								},
 								{
-									key: '5',
+									key: 'notes',
 									label: 'Notes',
 									children: getNotesSection()
 								},
 								{
-									key: '6',
+									key: 'malice',
 									label: 'Malice',
 									children: getMaliceSection()
 								}
 							]}
+							activeKey={activeLeftTabKey}
+							onChange={switchLeftTab}
 						/>
 					</div>
 					<div className='encounter-list-column'>
@@ -857,16 +885,18 @@ export const EncounterEditPanel = (props: Props) => {
 						<Tabs
 							items={[
 								{
-									key: '1',
+									key: 'monsters',
 									label: 'Monsters',
 									children: getMonsterListSection()
 								},
 								{
-									key: '2',
+									key: 'terrain',
 									label: 'Terrain',
 									children: getTerrainListSection()
 								}
 							]}
+							activeKey={activeRightTabKey}
+							onChange={switchRightTab}
 							tabBarExtraContent={
 								<Button
 									className='filter-button'
@@ -1017,7 +1047,7 @@ const TerrainDropTarget = (props: TerrainDropTargetProps) => {
 				{props.encounter.terrain.map(slot => props.getSlot(slot))}
 				{
 					props.encounter.terrain.length === 0 ?
-						<div className='ds-text dimmed-text centered-text'>No terrain</div>
+						<div className='ds-text dimmed-text centered-text'>Add terrain from the list on the right.</div>
 						: null
 				}
 			</Space>
@@ -1059,26 +1089,38 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 		const getCustomizePanel = () => {
 			return (
 				<Space orientation='vertical' style={{ width: '100%' }}>
-					<HeaderText>Customize</HeaderText>
-					<NumberSpin label='Adjust level' value={props.slot.customization.levelAdjustment} onChange={value => props.setSlotLevelAdjustment(props.group.id, props.slot.id, value)} />
-					{
-						monsterGroup.addOns.length > 0 ?
-							<Select
-								style={{ width: '100%' }}
-								placeholder='Select'
-								mode='multiple'
-								options={Collections.sort(monsterGroup.addOns, a => a.name).map(a => ({ value: a.id, label: a.name, feature: a, cost: a.data.cost }))}
-								optionRender={option => <FeaturePanel feature={option.data.feature} options={props.options} cost={option.data.cost} mode={PanelMode.Full} />}
-								value={props.slot.customization.addOnIDs}
-								onChange={ids => props.setSlotAddOnIDs(props.group.id, props.slot.id, ids)}
-							/>
-							: null
-					}
+					<HeaderText>Adjust Level</HeaderText>
+					<NumberSpin
+						min={1 - originalMonster.level}
+						value={props.slot.customization.levelAdjustment}
+						format={value => `${value + originalMonster.level}`}
+						onChange={value => props.setSlotLevelAdjustment(props.group.id, props.slot.id, value)}
+					/>
 					{
 						(originalMonster.role.organization === MonsterOrganizationType.Elite) || (originalMonster.role.organization === MonsterOrganizationType.Leader) ?
-							<Toggle label='Turn this monster into a Solo' value={props.slot.customization.convertToSolo} onChange={value => props.setSlotConvertToSolo(props.group.id, props.slot.id, value)} />
+							<>
+								<HeaderText>Promote</HeaderText>
+								<Toggle label='Turn this monster into a Solo' value={props.slot.customization.convertToSolo} onChange={value => props.setSlotConvertToSolo(props.group.id, props.slot.id, value)} />
+							</>
 							: null
 					}
+					{
+						monsterGroup.addOns.length > 0 ?
+							<>
+								<HeaderText>Customize</HeaderText>
+								<Select
+									style={{ width: '100%' }}
+									placeholder='Select'
+									mode='multiple'
+									options={Collections.sort(monsterGroup.addOns, a => a.name).map(a => ({ value: a.id, label: a.name, feature: a, cost: a.data.cost }))}
+									optionRender={option => <FeaturePanel feature={option.data.feature} options={props.options} cost={option.data.cost} mode={PanelMode.Full} />}
+									value={props.slot.customization.addOnIDs}
+									onChange={ids => props.setSlotAddOnIDs(props.group.id, props.slot.id, ids)}
+								/>
+							</>
+							: null
+					}
+					<HeaderText>Items</HeaderText>
 					{
 						props.slot.customization.itemIDs.map(itemID => {
 							const item = SourcebookLogic.getItems(props.sourcebooks).find(i => i.id === itemID);
@@ -1141,8 +1183,8 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 							<MonsterInfo monster={monster} />
 							<Flex align='center'>
 								<Button type='text' title='Show stat block' icon={<InfoCircleOutlined />} onClick={() => props.showMonster(monster, monsterGroup)} />
-								<Button type='text' title='Customize' icon={showCustomize ? <EditFilled /> : <EditOutlined />} onClick={() => setShowCustomize(!showCustomize)} />
-								<Popover content={getMenu()}>
+								<Button type='text' title='Customize' icon={showCustomize ? <EditFilled style={{ color: 'rgb(64, 150, 255)' }} /> : <EditOutlined />} onClick={() => setShowCustomize(!showCustomize)} />
+								<Popover trigger='click' content={getMenu()}>
 									<Button type='text' icon={<EllipsisOutlined />} />
 								</Popover>
 							</Flex>
@@ -1207,7 +1249,7 @@ const TerrainSlotPanel = (props: TerrainSlotPanelProps) => {
 							<TerrainInfo terrain={terrain} />
 							<Flex align='center'>
 								<Button type='text' title='Show stat block' icon={<InfoCircleOutlined />} onClick={() => props.showTerrain(terrain, props.slot.upgradeIDs)} />
-								{terrain.upgrades.length > 0 ? <Button type='text' title='Customize' icon={showCustomize ? <EditFilled /> : <EditOutlined />} onClick={() => setShowCustomize(!showCustomize)} /> : null}
+								{terrain.upgrades.length > 0 ? <Button type='text' title='Customize' icon={showCustomize ? <EditFilled style={{ color: 'rgb(64, 150, 255)' }} /> : <EditOutlined />} onClick={() => setShowCustomize(!showCustomize)} /> : null}
 							</Flex>
 						</Flex>
 						{showCustomize ? getCustomizePanel() : null}

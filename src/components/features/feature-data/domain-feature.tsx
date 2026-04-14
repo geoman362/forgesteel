@@ -25,17 +25,13 @@ export const InfoDomainFeature = (props: InfoProps) => {
 		return null;
 	}
 
-	if (!props.feature.description) {
-		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				{
-					props.data.selected.map(f => <FeaturePanel key={f.id} feature={f} options={props.options} />)
-				}
-			</Space>
-		);
-	}
-
-	return null;
+	return (
+		<Space orientation='vertical' style={{ width: '100%' }}>
+			{
+				props.data.selected.map(f => <FeaturePanel key={f.id} feature={f} options={props.options} />)
+			}
+		</Space>
+	);
 };
 
 interface EditProps {
@@ -113,7 +109,7 @@ export const ConfigDomainFeature = (props: ConfigProps) => {
 				optionRender={option => <Field label={option.data.label} value={option.data.desc} />}
 				value={props.data.count === 1 ? (props.data.selected.length > 0 ? props.data.selected[0].id : null) : props.data.selected.map(f => f.id)}
 				onChange={value => {
-					let ids: string[] = [];
+					let ids: string[];
 					if (props.data.count === 1) {
 						ids = value !== undefined ? [ value as string ] : [];
 					} else {

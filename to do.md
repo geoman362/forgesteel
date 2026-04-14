@@ -1,5 +1,12 @@
 # Development Plans
 
+* Update:
+  * Vampire
+  * Vessel
+* Monster customization should include:
+  * Monster group add-ons
+  * Retainer level up choices
+
 ### Heroes
 
 * Classic Sheet

@@ -39,10 +39,6 @@ export class HeroUpdateLogic {
 		hero.settingIDs = hero.settingIDs.map(id => id === '' ? SourcebookData.core.id : id);
 
 		if (hero.ancestry) {
-			hero.ancestry.features
-				.filter(f => f.type === FeatureType.Choice)
-				.forEach(f => f.data.count = 'ancestry');
-
 			hero.ancestry.features.forEach(FeatureUpdateLogic.updateFeature);
 
 			if (hero.ancestry.ancestryPoints === undefined) {
@@ -438,18 +434,23 @@ export class HeroUpdateLogic {
 					const oFeature = originalFeature as FeatureChoice;
 
 					const selectedIDs = oFeature.data.selected.map(s => s.id);
+
 					let availableOptions = [ ...feature.data.options ];
-					if (availableOptions.some(opt => opt.feature.type === FeatureType.AncestryFeatureChoice)) {
-						availableOptions = availableOptions.filter(opt => opt.feature.type !== FeatureType.AncestryFeatureChoice);
-						const additionalOptions = HeroLogic.getFormerAncestries(hero)
+					if (feature.data.count === 'ancestry') {
+						availableOptions = sourcebooks
+							.flatMap(sb => sb.ancestries)
 							.flatMap(a => a.features)
 							.filter(f => f.type === FeatureType.Choice)
-							.flatMap(f => f.data.options)
-							.filter(opt => opt.feature.type !== FeatureType.AncestryFeatureChoice);
-						availableOptions.push(...additionalOptions);
+							.filter(f => f.data.count === 'ancestry')
+							.flatMap(f => f.data.options);
 					}
 
-					feature.data.selected = availableOptions.map(o => o.feature).filter(o => selectedIDs.includes(o.id));
+					selectedIDs.forEach(id => {
+						const option = availableOptions.find(o => o.feature.id === id);
+						if (option) {
+							feature.data.selected.push(option.feature);
+						}
+					});
 					feature.data.selected.forEach(child => {
 						const oChild = oFeature.data.selected.find(x => x.id === child.id);
 						if (oChild) {
@@ -565,6 +566,11 @@ export class HeroUpdateLogic {
 							HeroUpdateLogic.updateFeatureData(child, oChild, hero, sourcebooks);
 						}
 					});
+					break;
+				}
+				case FeatureType.Retainer: {
+					const oFeature = originalFeature as FeatureRetainer;
+					feature.data.selected = oFeature.data.selected;
 					break;
 				}
 				case FeatureType.SkillChoice: {

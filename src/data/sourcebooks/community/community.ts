@@ -126,6 +126,1811 @@ It is whispered that, with the Life Oath broken, it is not a matter of 'if' but 
 	culture: FactoryLogic.createCulture('Aranox', 'Secluded, communal, labor.', CultureType.Ancestral, EnvironmentData.secluded, OrganizationData.communal, UpbringingData.labor, 'Khamish')
 };
 
+const asomath: Ancestry = {
+	id: 'ancestry-asomath',
+	name: 'Asomath',
+	description: `
+*by Dima Serbin*
+
+Far from the center of the multiverse lies the obscure, toxic world of Hazzox, the homeworld of beings known throughout the timescape as asomaths — sentient, formless clouds composed entirely of gas. Their gaseous nature does not prevent them from building cities or shaping the world around them to suit their needs, as they are capable of compressing their forms to generate pressure. Particularly valued within asomath society are those gifted with psionic talent, able to shape and create matter with nothing more than a thought.
+
+After encountering visitors from outer space, the asomaths came to realize that other worlds existed beyond their own — worlds largely inhospitable to the sentient gases of Hazzox. The only protection they possess against dissipating in these alien atmospheres are their environmental suits, which they control through subtle shifts in internal pressure. Now, though rarely, one might encounter a walking heap of metal in the shape of a person — and hope that the asomath inside is one of the good ones.`,
+	features: [
+		FactoryLogic.feature.createChoice({
+			id: 'asomath-feature-1',
+			name: 'Purchased Traits',
+			description: '',
+			options: [
+				{
+					feature: FactoryLogic.feature.createBonus({
+						id: 'asomath-feature-1a',
+						name: 'Grounded',
+						description: 'Your heavy metal suit makes it difficult for others to move you.',
+						field: FeatureField.Stability,
+						value: 1
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'asomath-feature-1b',
+						name: 'Hard Body',
+						description: 'Whenever you are force moved or fall, any creature or object you collide with takes an additional 2 damage.'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createBonus({
+						id: 'asomath-feature-1c',
+						name: 'Hardened Plates',
+						description: 'Your envirosuit is reinforced with hardened metal plates.',
+						field: FeatureField.Stamina,
+						valuePerEchelon: 6
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'asomath-feature-1d',
+						name: 'Stand Tough',
+						description: 'Your body is made to withstand the blows of your enemies. Your Might score is treated as 1 higher for the purpose of resisting potencies, and you gain an edge on Might tests when called for to resist environmental effects or a creature’s traits or abilities.'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createAbility({
+						ability: FactoryLogic.createAbility({
+							id: 'asomath-feature-1e',
+							name: 'Teleplasty',
+							description: 'As the gas fills the mechanism, it suddenly starts to move.',
+							type: FactoryLogic.type.createManeuver(),
+							distance: [ FactoryLogic.distance.createMelee() ],
+							target: 'Special',
+							sections: [
+								FactoryLogic.createAbilitySectionText(`
+Your gaseous body can enter an inanimate mechanical object, gaining an edge on any power roll made to interact with it. You don’t need any additional tools that you would usually need to interact with the object, such as requiring lockpicks to pick a lock.
+
+Alternatively, you can enter an intact corpse of a creature, taking full control over it until the end of your turn. You can spend 1 Recovery at the end of that turn to continue controlling the corpse until you leave it. While you are controlling the corpse, you are considered unconscious, except that you perceive your surroundings through the corpse. The corpse acts on your turn, using the creature’s stat block with its Stamina at winded value, and your Reason, Intuition, and Presence scores. You can't use the creature's main action and your main action on the same turn. If you leave the corpse or it is destroyed, you immediately stop being unconscious, standing up from prone as a free maneuver. You can leave the corpse as a free maneuver.
+
+You can’t use this ability again until you earn 1 or more Victories.`)
+							]
+						})
+					}),
+					value: 2
+				}
+			],
+			count: 'ancestry'
+		}),
+		FactoryLogic.feature.createMultiple({
+			id: 'asomath-feature-2',
+			name: 'Envirosuit',
+			features: [
+				FactoryLogic.feature.create({
+					id: 'asomath-feature-2a',
+					name: 'Envirosuit',
+					description: 'You possess an environmental suit that serves as your container, allowing you to better interact with the environment alien to your ancestry. You can’t suffocate, and you don’t need to eat or drink to stay alive.'
+				}),
+				FactoryLogic.feature.createDamageModifier({
+					id: 'asomath-feature-2b',
+					name: 'Poison Immunity',
+					modifiers: [
+						FactoryLogic.damageModifier.createPerLevel({
+							damageType: DamageType.Poison,
+							modifierType: DamageModifierType.Immunity,
+							value: 1
+						})
+					]
+				})
+			]
+		}),
+		FactoryLogic.feature.create({
+			id: 'asomath-feature-3',
+			name: 'Heavyweight',
+			description: 'Whenever another creature attempts to force move you, you treat your size as one size larger than it is.'
+		})
+	],
+	ancestryPoints: 3
+};
+
+const beastfolk: Ancestry = {
+	id: 'ancestry-beastfolk',
+	name: 'Beastfolk',
+	description: `
+*By Andy Aiken*
+
+Across the world - and across many worlds - humanoid cultures sometimes arise that resemble the animals around them.
+
+"Beastfolk" is not the name of a single people; it is a convenient term used by scholars and travelers to describe a wide variety of humanoid peoples who bear the traits of animals. Wolf-headed hunters, feathered skyfolk, scaled serpentkin, nimble catfolk, and countless others are all grouped under this broad label.`,
+	features: [
+		FactoryLogic.feature.createChoice({
+			id: 'beastfolk-1',
+			name: 'Primal Instinct',
+			description: 'The animal spirit within you emerges in moments of danger.',
+			options: [
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-1-1',
+						name: 'Pack Instinct',
+						description: `
+*You fight best beside your allies.*
+
+You gain an edge on melee strikes against enemies who are  adjacent to at least two of your allies.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-1-2',
+						name: 'Predator Instinct',
+						description: `
+*You know how to finish the hunt.*
+
+You gain a bonus to strike damage equal to your echelon against winded enemies. 
+
+You gain an edge on Track tests.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-1-3',
+						name: 'Rampager Instinct',
+						description: `
+*You overwhelm enemies through sheer force.*
+
+When you force move a creature, you deal damage to it equal to the distance moved.
+
+You gain an edge on Intimidate tests.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-1-4',
+						name: 'Skirmisher Instinct',
+						description: 'You strike and vanish before retaliation',
+						features: [
+							FactoryLogic.feature.createBonus({
+								id: 'beastfolk-1-4a',
+								field: FeatureField.Disengage,
+								value: 1
+							}),
+							FactoryLogic.feature.create({
+								id: 'beastfolk-1-4b',
+								name: 'Skirmisher Instinct',
+								description: 'You gain an edge on Gymnastics and Jump tests.'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-1-5',
+						name: 'Stalker Instinct',
+						description: `
+*You are patient and unseen.*
+
+You gain an edge on Hide and Sneak tests.
+
+Your first strike against a creature that hasn’t acted yet this encounter gains an edge.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-1-6',
+						name: 'Survivor Instinct',
+						description: `
+*You refuse to fall.*
+
+When you become winded, you gain temporary Stamina equal to your level.
+
+You gain an edge on Alertness and Endurance tests.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-1-7',
+						name: 'Trickster Instinct',
+						description: `
+*You survive through misdirection and cleverness.*
+
+When a creature misses you with a strike, you can use a triggered action to shift up to 2 squares. 
+
+You gain an edge on Lie and Persuade tests.`
+					}),
+					value: 1
+				}
+			]
+		}),
+		FactoryLogic.feature.createChoice({
+			id: 'beastfolk-2',
+			name: 'Purchased Traits',
+			options: [
+				{
+					feature: FactoryLogic.feature.createBonus({
+						id: 'beastfolk-2-1',
+						name: 'Natural Armor',
+						description: 'Your skin is dense or leathery, or you have an exoskeleton.',
+						field: FeatureField.Stamina,
+						value: 3,
+						valuePerLevel: 3
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-2',
+						name: 'Regeneration',
+						description: `
+*Your body heals with unnatural speed.*
+
+If you are winded at the start of your turn, you immediately regain Stamina equal to your echelon.`
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-3',
+						name: 'Slippery Body',
+						description: 'Your scales or skin make you difficult to restrain.',
+						features: [
+							FactoryLogic.feature.createSkillChoice({
+								id: 'beastfolk-2-3a',
+								selected: [ 'Escape Artist' ]
+							}),
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-3b',
+								name: 'Slippery Body',
+								description: 'Enemies suffer a bane on attempts to grab you.'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-4',
+						name: 'Spines',
+						description: `
+*Your body is covered in quills or barbs.*
+
+When a creature attempts to grab you, it takes damage equal to your echelon.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-5',
+						name: 'Echolocation',
+						description: `
+*You perceive your surroundings through reflected sound.*
+
+You ignore concealment and invisibility against creatures within 3 squares that are not hidden.
+
+You suffer a bane on Alertness and Eavesdrop tests in areas of loud noise.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-6',
+						name: 'Tremor Sense',
+						description: `
+*You feel vibrations through the ground.*
+
+You can detect the location of any creatures touching the ground within 3 squares, even if they are hidden or invisible or you lack line of effect to them.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-7',
+						name: 'Airborne',
+						description: 'You can fly.',
+						features: [
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-7a',
+								name: 'Airborne',
+								description: 'While flying, you can stay aloft for a number of rounds equal to your Might score (minimum 1 round) before you fall. While flying at 3rd level or lower, you have damage weakness 5.'
+							}),
+							FactoryLogic.feature.createMovementMode({
+								id: 'beastfolk-2-7b',
+								mode: 'Fly'
+							})
+						]
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-8',
+						name: 'Amphibious',
+						description: 'You are at home in the water.',
+						features: [
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-8a',
+								name: 'Amphibious',
+								description: 'You can hold your breath for 1 hour.'
+							}),
+							FactoryLogic.feature.createMovementMode({
+								id: 'beastfolk-2-8b',
+								mode: 'Swim'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-9',
+						name: 'Climber',
+						description: 'You move easily across vertical surfaces.',
+						features: [
+							FactoryLogic.feature.createMovementMode({
+								id: 'beastfolk-2-9a',
+								mode: 'Climb'
+							}),
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-9b',
+								name: 'Climber',
+								description: `
+When a creature misses you with a melee strike while you are adjacent to a climbable surface, you can shift 1.
+
+You gain an edge on Climb tests.`
+							})
+						]
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-10',
+						name: 'Fey Stepper',
+						description: `
+*Your instincts echo the strange movement of fey beasts.*
+
+When you take the Disengage move action, you can teleport that distance rather than shifting.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-11',
+						name: 'Leaper',
+						description: 'Your legs are built for explosive jumps.',
+						features: [
+							FactoryLogic.feature.createSkillChoice({
+								id: 'beastfolk-2-11a',
+								selected: [ 'Jump' ]
+							}),
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-11b',
+								name: 'Leaper',
+								description: 'When you jump, increase the distance by 2 squares.'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMovementMode({
+						id: 'beastfolk-2-12',
+						name: 'Tunnel-Dweller',
+						description: 'Using claws or mandibles, you can move through the earth.',
+						mode: 'Burrow'
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createSize({
+						id: 'beastfolk-2-13',
+						name: 'Big!',
+						sizeValue: 1,
+						sizeMod: 'L'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-14',
+						name: 'Camouflage',
+						description: 'Your body blends naturally with your surroundings.',
+						features: [
+							FactoryLogic.feature.createSkillChoice({
+								id: 'beastfolk-2-14',
+								selected: [ 'Hide' ]
+							}),
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-14',
+								name: 'Camouflage',
+								description: 'You gain an edge on Hide tests.'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-15',
+						name: 'Hold Fast',
+						description: `
+*Your body is adapted for seizing prey.*
+
+When you take the Grab maneuver you have an edge on your power roll; when you have a creature grabbed, they take a bane on their roll to escape your grab.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-16',
+						name: 'Pack Tactics',
+						description: `
+*You and your allies know how to bring prey down together.*
+
+When you use the Knockdown maneuver against an enemy adjacent to one of your allies, you gain an edge on the power roll.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-17',
+						name: 'Powerful Build',
+						description: 'You possess the mass and strength of powerful beasts.',
+						features: [
+							FactoryLogic.feature.createSkillChoice({
+								id: 'beastfolk-2-17a',
+								selected: [ 'Lift' ]
+							}),
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-17b',
+								name: 'Powerful Build',
+								description: 'You gain an edge on Might tests, and your Might score is treated as 1 higher for the purpose of resisting potencies.'
+							})
+						]
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-18',
+						name: 'Prehensile Tail',
+						description: 'Your tail is dexterous.',
+						features: [
+							FactoryLogic.feature.createSkillChoice({
+								id: 'beastfolk-2-18a',
+								selected: [ 'Climb', 'Gymnastics' ]
+							}),
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-18b',
+								name: 'Prehensile Tail',
+								description: 'You can retrieve small items without using your hands.'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createAbility({
+						ability: FactoryLogic.createAbility({
+							id: 'beastfolk-2-19',
+							name: 'Terrifying Roar',
+							description: 'Your roar carries the authority of a primal predator.',
+							type: FactoryLogic.type.createManeuver(),
+							keywords: [ AbilityKeyword.Area ],
+							distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 2 }) ],
+							target: 'Each enemy in the area',
+							sections: [
+								FactoryLogic.createAbilitySectionText('The target suffers a bane on its next strike.')
+							]
+						})
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-20',
+						name: 'Ambush Predator',
+						description: `
+*You strike hardest from concealment.*
+
+If you are hidden when you use a strike ability, you gain a double edge on your power roll (rather than the single edge you would normally get for being hidden).`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-21',
+						name: 'Constrictor',
+						description: `
+*Your body coils with crushing strength.*
+
+Creatures you have grabbed take damage equal to your echelon at the start of their turn.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-22',
+						name: 'Gore',
+						description: `
+*You possess horns, antlers, tusks, or similar natural weapons built for driving attacks.*
+
+When you take the Charge action, your strike gains +1d6 damage.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'beastfolk-2-23',
+						name: 'Pounce',
+						description: 'You leap upon prey with predatory force.',
+						features: [
+							FactoryLogic.feature.create({
+								id: 'beastfolk-2-23a',
+								name: 'Pounce',
+								description: 'When you score a tier 3 result with a melee strike, you can knock the target prone.'
+							}),
+							FactoryLogic.feature.createSkillChoice({
+								id: 'beastfolk-2-23b',
+								selected: [ 'Jump' ]
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-24',
+						name: 'Ram',
+						description: `
+*You strike with horns or antlers.*
+
+Whenever you force move a creature or object, the forced movement distance gains a +1 bonus.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-25',
+						name: 'Rending Claws',
+						description: `
+*Your claws tear flesh with savage force.*
+
+When you score a tier 3 result with a melee strike, the target becomes bleeding (save ends).`
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createAbility({
+						ability: FactoryLogic.createAbility({
+							id: 'beastfolk-2-26',
+							name: 'Tail Lash',
+							description: 'Your hands aren’t the only things they need to watch out for.',
+							type: FactoryLogic.type.createMain(),
+							keywords: [ AbilityKeyword.Melee ],
+							distance: [ FactoryLogic.distance.createMelee(2) ],
+							target: 'One enemy',
+							sections: [
+								FactoryLogic.createAbilitySectionRoll(FactoryLogic.createPowerRoll({
+									characteristic: [ Characteristic.Might, Characteristic.Agility ],
+									tier1: '4 + M or A damage; push 1; M < 0 prone',
+									tier2: '4 + M or A damage; push 1; M < 1 prone',
+									tier3: '4 + M or A damage; push 1; M < 2 prone'
+								}))
+							]
+						})
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'beastfolk-2-27',
+						name: 'Venomous',
+						description: `
+*You can inject poison from your fangs, claws, or spines.*
+
+When you score a tier 3 result with a melee strike, you can deal an additional 1d6 poison damage.`
+					}),
+					value: 1
+				}
+			],
+			count: 'ancestry'
+		})
+	],
+	ancestryPoints: 3,
+	culture: FactoryLogic.createCulture('Beastfolk', 'Wilderness, communal, martial.', CultureType.Ancestral, EnvironmentData.wilderness, OrganizationData.communal, UpbringingData.martial, 'Khamish')
+};
+
+const gallGuardian: Ancestry = {
+	id: 'ancestry-gall-guardian',
+	name: 'Gall Guardian',
+	description: `
+*By Heart of Arcana*
+
+Some oaklings choose to walk a different path than their kin. Though it often results in their departure from the wode, these oaklings choose to gain knowledge and power at the expense of permitting parasitic wasps to lay their eggs within their wooden flesh. This choice results in a transformation that turns them from a being of leaf and acorn into a distorted gall creature, riddled and pockmarked with holes, a guardian of the wode`,
+	features: [
+		FactoryLogic.feature.createMultiple({
+			id: 'gall-guardian-1',
+			name: 'Wode Ward',
+			features: [
+				FactoryLogic.feature.createSize({
+					id: 'gall-guardian-1a',
+					sizeValue: 1,
+					sizeMod: 'S'
+				}),
+				FactoryLogic.feature.createConditionImmunity({
+					id: 'gall-guardian-1b',
+					conditions: [ ConditionType.Frightened ]
+				}),
+				FactoryLogic.feature.create({
+					id: 'gall-guardian-1c',
+					name: 'Language of Insects',
+					description: 'You can speak the language of insects.'
+				}),
+				FactoryLogic.feature.createChoice({
+					id: 'gall-guardian-1d',
+					options: [
+						{
+							feature: FactoryLogic.feature.createDamageModifier({
+								id: 'gall-guardian-1da',
+								modifiers: [
+									FactoryLogic.damageModifier.createValuePlusPerLevel({
+										damageType: DamageType.Poison,
+										modifierType: DamageModifierType.Immunity,
+										value: 5,
+										perLevel: 1
+									})
+								]
+							}),
+							value: 1
+						},
+						{
+							feature: FactoryLogic.feature.createDamageModifier({
+								id: 'gall-guardian-1db',
+								modifiers: [
+									FactoryLogic.damageModifier.createValuePlusPerLevel({
+										damageType: DamageType.Fire,
+										modifierType: DamageModifierType.Immunity,
+										value: 5,
+										perLevel: 1
+									})
+								]
+							}),
+							value: 1
+						}
+					]
+				}),
+				FactoryLogic.feature.create({
+					id: 'gall-guardian-1e',
+					name: 'Wode Ward',
+					description: 'You gain an edge on Presence tests made to intimidate, coerce, or bully, but have a bane on Presence tests made to empathize or persuade.'
+				})
+			]
+		})
+	],
+	ancestryPoints: 0,
+	culture: FactoryLogic.createCulture('Gall Guardian', 'Wilderness, communal, martial.', CultureType.Ancestral, EnvironmentData.wilderness, OrganizationData.communal, UpbringingData.martial, 'Yllyric')
+};
+
+const ironbound: Ancestry = {
+	id: 'ancestry-ironbound',
+	name: 'Ironbound',
+	description: `
+*By Andy Aiken*
+
+The ironbound are living machines: bodies of iron, brass, and rune-etched steel animated by a mysterious spark. Though they resemble humanoids in shape, their forms are unmistakably artificial.`,
+	features: [
+		FactoryLogic.feature.createChoice({
+			id: 'ironbound-1',
+			name: 'Adaptive Chassis',
+			description: 'Your body is built from modular mechanisms that can reconfigure into different modes when needed.',
+			options: [
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'ironbound-1a',
+						name: 'Assault Mode',
+						features: [
+							FactoryLogic.feature.createAbilityDamage({
+								id: 'ironbound-1a-1',
+								keywords: [ AbilityKeyword.Melee, AbilityKeyword.Strike ],
+								valuePerEchelon: 1
+							}),
+							FactoryLogic.feature.createBonus({
+								id: 'ironbound-1a-2',
+								field: FeatureField.Speed,
+								value: 1
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'ironbound-1b',
+						name: 'Bulwark Mode',
+						features: [
+							FactoryLogic.feature.create({
+								id: 'ironbound-1b-1',
+								name: 'Bulwark Mode',
+								description: 'You gain an edge on tests to keep your footing on unstable surfaces such as ice, narrow ledges, swaying bridges, or collapsing ground.'
+							}),
+							FactoryLogic.feature.createBonus({
+								id: 'ironbound-1b-2',
+								field: FeatureField.Stability,
+								value: 1
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'ironbound-1c',
+						name: 'Guardian Mode',
+						description: 'When an adjacent ally is targeted by a strike, you can use a triggered action to swap places with the ally and become the new target of the strike, provided you are a valid target'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'ironbound-1d',
+						name: 'Infiltration Mode',
+						description: `
+* You can move at full speed while sneaking
+* You gain an edge on Hide and Sneak tests`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'ironbound-1e',
+						name: 'Precision Mode',
+						description: `
+* Your attacks ignore partial cover
+* You gain an edge on Eavesdrop and Track tests`
+					}),
+					value: 1
+				}
+			],
+			respiteChange: true
+		}),
+		FactoryLogic.feature.createMultiple({
+			id: 'ironbound-2',
+			name: 'Iron Body',
+			features: [
+				FactoryLogic.feature.createDamageModifier({
+					id: 'ironbound-2a',
+					modifiers: [
+						FactoryLogic.damageModifier.createPerLevel({
+							damageType: DamageType.Poison,
+							modifierType: DamageModifierType.Immunity,
+							value: 1
+						}),
+						FactoryLogic.damageModifier.create({
+							damageType: DamageType.Lightning,
+							modifierType: DamageModifierType.Weakness,
+							value: 5
+						})
+					]
+				}),
+				FactoryLogic.feature.create({
+					id: 'ironbound-2b',
+					name: 'Iron Body',
+					description: 'You can’t suffocate, and you don’t need to eat or drink to stay alive.'
+				})
+			]
+		}),
+		FactoryLogic.feature.createChoice({
+			id: 'ironbound-3',
+			name: 'Purchased Traits',
+			options: [
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'ironbound-3a',
+						name: 'Ablative Plating',
+						description: 'When an enemy scores a tier 3 result against you with a strike, you can use a triggered action to lose Stamina equal to 1d6 plus your level and turn the tier 3 result into a tier 2 result.'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'ironbound-3b',
+						name: 'Appraisal Engine',
+						description: `
+Your senses are built to read stress, weakness, and structural failure.
+
+You gain an edge on tests to understand or analyze constructs, mechanisms, vehicles, and damaged objects.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createSize({
+						id: 'ironbound-3c',
+						name: 'Big!',
+						sizeValue: 1,
+						sizeMod: 'L'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'ironbound-3d',
+						name: 'Internal Reserves',
+						description: `
+Your body stores emergency power for moments of strain.
+
+The first time in an encounter you become winded, you gain temporary Stamina equal to your level.`
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createAbility({
+						ability: FactoryLogic.createAbility({
+							id: 'ironbound-3e',
+							name: 'Overdrive',
+							description: 'You can briefly push your mechanisms beyond safe limits, for a cost.',
+							type: FactoryLogic.type.createManeuver(),
+							keywords: [],
+							distance: [ FactoryLogic.distance.createSelf() ],
+							target: 'Self',
+							sections: [
+								FactoryLogic.createAbilitySectionField({
+									name: 'Note',
+									effect: 'You cannot use this maneuver if you are dazed or weakened.'
+								}),
+								FactoryLogic.createAbilitySectionText('You can take one additional main action.'),
+								FactoryLogic.createAbilitySectionText('When your turn ends, you lose Stamina equal to 1d6 plus your level and become dazed (save ends); when the dazed condition ends, you become weakened (save ends).')
+							]
+						})
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'ironbound-3f',
+						name: 'Replay Memory',
+						description: 'You gain an edge on tests made to recall previous events.'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'ironbound-3g',
+						name: 'Restoration Engine',
+						description: `
+When your Stamina reaches the negative of your winded value, you become inert instead of dying. You fall prone and can’t stand.
+
+You continue to observe your surroundings, but you can’t speak, take main actions, maneuvers, move actions, or triggered actions. While inert this way, if you take any lightning damage, your body is destroyed and you die. Otherwise, after 12 hours, you regain Stamina equal to your recovery value.`
+					}),
+					value: 2
+				}
+			],
+			count: 'ancestry'
+		})
+	],
+	ancestryPoints: 2,
+	culture: FactoryLogic.createCulture('Ironbound', 'Urban, bureaucratic, martial.', CultureType.Ancestral, EnvironmentData.urban, OrganizationData.bureaucratic, UpbringingData.martial, 'Rallarian')
+};
+
+const oakling: Ancestry = {
+	id: 'ancestry-oakling',
+	name: 'Oakling',
+	description: `
+*By Heart of Arcana*
+
+*Children of the oak. Wild soul-sparks dancing in the trees. Wonder and joy, their arms stretching upwards and outwards. Ever seeking. Their hearts like green tendrils grasping for light.*
+- Elder Druid Mogh Roith
+
+Native to the great wodes of Orden, oaklings are the children of great-grandmother oak trees. Sprouting like acorns from her branches, they live in her trunk and defend both her and the wode from threats. Though they are tiny in stature, they hold within them the strength and vigor of the mightiest, sturdiest oaks.
+
+Oaklings are as diverse as the oaks that bear them. Their distinction is evident in the color, size, and texture of their acorn cap. The combinations of the caps result in a colorful and diverse array of oakling presentations.`,
+	features: [
+		FactoryLogic.feature.create({
+			id: 'oakling-1a',
+			name: 'Acorn Retreat',
+			description: 'Whenever you take damage from a creature, you can use a triggered action to retreat into your acorn cap and halve the damage. While in your acorn cap, your stability is 0, your speed is 0, you have psychic immunity equal to 5 plus your level, and fire weakness equal to 5 plus your level. You automatically exit your acorn cap at the end of your next turn.'
+		}),
+		FactoryLogic.feature.createSize({
+			id: 'oakling-1b',
+			name: 'Tiny!',
+			description: 'Your stature is compact and dense.',
+			sizeValue: 1,
+			sizeMod: 'T'
+		}),
+		FactoryLogic.feature.createChoice({
+			id: 'oakling-2',
+			name: 'Oakling Traits',
+			options: [
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'oakling-2a',
+						name: 'Poison Protector',
+						description: 'The leaves on your body are vibrant and poisonous. Whenever you take damage from a creature within 2, you can use a triggered action to cause that creature to gain poison weakness equal to twice your highest characteristic score (EoT).'
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'oakling-2b',
+						name: 'Ritual Host',
+						description: 'You permit poison mistletoe to grow within and on your wooden body. Whenever you deal damage with an ability, you can have it deal poison damage instead of its original damage type.'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createBonus({
+						id: 'oakling-2c',
+						name: 'Roots of the Blue Oak',
+						description: 'The wood that makes up your body is as sturdy as the most ancient oak.',
+						field: FeatureField.Stability,
+						value: 1
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'oakling-2d',
+						name: 'Strength of the White Oak',
+						description: 'The sinew of your wooden body is as strong as iron! Your Might score is treated as 1 higher for the purpose of resisting potencies, and you gain an edge on Might tests when called for to resist environmental effects or a creature’s traits or abilities.'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createConditionImmunity({
+						id: 'oakling-2e',
+						name: 'Heartwood',
+						description: 'Your core is unshakable.',
+						conditions: [ ConditionType.Frightened ]
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.create({
+						id: 'oakling-2f',
+						name: 'Gift of Woodspeech',
+						description: 'You naturally speak the language of trees and plant creatures. In addition, once per day, you can touch a piece of wood and learn the name of the last person who touched it before you.'
+					}),
+					value: 1
+				}
+			],
+			count: 'ancestry'
+		})
+	],
+	ancestryPoints: 4,
+	culture: FactoryLogic.createCulture('Oakling', 'Wilderness, communal, martial.', CultureType.Ancestral, EnvironmentData.wilderness, OrganizationData.communal, UpbringingData.martial, 'Yllyric')
+};
+
+const deva: Ancestry = {
+	id: 'ancestry-deva',
+	name: 'Deva',
+	description: `
+*By Andy Aiken*
+
+Across many lands there are those whose bodies and spirits carry the imprint of the world’s primal forces. Known collectively as devas, these individuals embody an elemental principle in their blood - if indeed they have blood, as it would perhaps be more accurate to think of them as the very manifestations of the elements themselves.`,
+	features: [
+		FactoryLogic.feature.createChoice({
+			id: 'deva-1',
+			name: 'Elemental Core',
+			options: [
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'deva-1-1',
+						name: 'Air',
+						description: 'Air is the element of movement. Devas with this elemental core are known as Storm-kin.',
+						features: [
+							FactoryLogic.feature.createSwitchValue({
+								id: 'deva-1-1a',
+								switch: 'Elemental Core',
+								value: 'Air'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-1b',
+								name: 'Aura',
+								description: 'If the target is an enemy, you push the target a number of squares equal to your echelon.',
+								tag: 'elemental-aura'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-1c',
+								name: 'Instability',
+								description: 'Your Elemental Instability ability deals lightning damage.',
+								tag: 'elemental-instability'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'deva-1-2',
+						name: 'Earth',
+						description: 'Earth is the element of permanence. Devas with this elemental core are known as Stone-kin.',
+						features: [
+							FactoryLogic.feature.createSwitchValue({
+								id: 'deva-1-2a',
+								switch: 'Elemental Core',
+								value: 'Earth'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-2b',
+								name: 'Aura',
+								description: `
+If the target is an ally, the target gains +1 Stability until they leave your aura.
+
+If the target is an enemy, each square adjacent to you is considered to be difficult terrain for that enemy until the start of its next turn.`,
+								tag: 'elemental-aura'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-2c',
+								name: 'Instability',
+								description: 'Your Elemental Instability ability deals untyped damage.',
+								tag: 'elemental-instability'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'deva-1-3',
+						name: 'Fire',
+						description: 'Fire is the element of destruction. Devas with this elemental core are known as Ember-kin.',
+						features: [
+							FactoryLogic.feature.createSwitchValue({
+								id: 'deva-1-3a',
+								switch: 'Elemental Core',
+								value: 'Fire'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-3b',
+								name: 'Aura',
+								description: 'If the target is an enemy, the target takes fire damage equal to your echelon.',
+								tag: 'elemental-aura'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-3c',
+								name: 'Instability',
+								description: 'Your Elemental Instability ability deals fire damage.',
+								tag: 'elemental-instability'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'deva-1-4',
+						name: 'Green',
+						description: 'Green is the element of creation and growth. Devas with this elemental core are known as Wild-kin.',
+						features: [
+							FactoryLogic.feature.createSwitchValue({
+								id: 'deva-1-4a',
+								switch: 'Elemental Core',
+								value: 'Green'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-4b',
+								name: 'Aura',
+								description: 'If the target is an ally, the target gains temporary Stamina equal to your level.',
+								tag: 'elemental-aura'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-4c',
+								name: 'Instability',
+								description: 'Your Elemental Instability ability deals poison damage.',
+								tag: 'elemental-instability'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'deva-1-5',
+						name: 'Rot',
+						description: 'Rot is the element of decay. Devas with this elemental core are known as Grave-kin.',
+						features: [
+							FactoryLogic.feature.createSwitchValue({
+								id: 'deva-1-5a',
+								switch: 'Elemental Core',
+								value: 'Rot'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-5b',
+								name: 'Aura',
+								description: 'If the target is an enemy, the target takes a bane on their next power roll.',
+								tag: 'elemental-aura'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-5c',
+								name: 'Instability',
+								description: 'Your Elemental Instability ability deals corruption damage.',
+								tag: 'elemental-instability'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'deva-1-6',
+						name: 'Void',
+						description: 'Void is the element of the mystery. Devas with this elemental core are known as Rift-kin.',
+						features: [
+							FactoryLogic.feature.createSwitchValue({
+								id: 'deva-1-6a',
+								switch: 'Elemental Core',
+								value: 'Void'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-6b',
+								name: 'Aura',
+								description: 'You teleport the target to a different unoccupied square adjacent to you. This affects both allies and enemies.',
+								tag: 'elemental-aura'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-6c',
+								name: 'Instability',
+								description: 'Your Elemental Instability ability deals psychic damage.',
+								tag: 'elemental-instability'
+							})
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createMultiple({
+						id: 'deva-1-7',
+						name: 'Water',
+						description: 'Water is the element of change. Devas with this elemental core are known as Tide-kin.',
+						features: [
+							FactoryLogic.feature.createSwitchValue({
+								id: 'deva-1-7a',
+								switch: 'Elemental Core',
+								value: 'Water'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-7b',
+								name: 'Aura',
+								description: 'You slide the target 1 square. This affects both allies and enemies.',
+								tag: 'elemental-aura'
+							}),
+							FactoryLogic.feature.createPackageContent({
+								id: 'deva-1-7c',
+								name: 'Instability',
+								description: 'Your Elemental Instability ability deals cold damage.',
+								tag: 'elemental-instability'
+							})
+						]
+					}),
+					value: 1
+				}
+			]
+		}),
+		FactoryLogic.feature.createAbility({
+			ability: FactoryLogic.createAbility({
+				id: 'deva-2',
+				name: 'Elemental Instability',
+				description: 'You explode with barely-controlled energy.',
+				type: FactoryLogic.type.createTrigger(`
+Any of the following:
+
+* You roll a natural 19 or 20
+* The first time you become winded in an encounter
+* The first time you become dying in an encounter
+* You die`, { free: true }),
+				keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic ],
+				distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 1 }) ],
+				target: 'Each creature in the area',
+				sections: [
+					FactoryLogic.createAbilitySectionRoll(FactoryLogic.createPowerRoll({
+						characteristic: [],
+						tier1: '2 damage',
+						tier2: '3 damage',
+						tier3: '5 damage'
+					})),
+					FactoryLogic.createAbilitySectionText('When this ability’s trigger condition is met, you must use this ability.'),
+					FactoryLogic.createAbilitySectionText('When you use this ability, you can spend a surge to affect only enemies.'),
+					FactoryLogic.createAbilitySectionPackage('elemental-instability')
+				]
+			})
+		}),
+		FactoryLogic.feature.createChoice({
+			id: 'deva-3',
+			name: 'Purchased Traits',
+			options: [
+				{
+					feature: FactoryLogic.feature.createAbility({
+						ability: FactoryLogic.createAbility({
+							id: 'deva-3-1',
+							name: 'Elemental Aura',
+							description: '“You want to see what I’m made of? Poor choice of words.”',
+							type: FactoryLogic.type.createManeuver(),
+							keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic ],
+							distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Aura, value: 1 }) ],
+							target: 'Each creature in the area',
+							sections: [
+								FactoryLogic.createAbilitySectionText('Until the end of the encounter or you are dying, each target that enters or starts its turn in the area is subjected to an effect determined by your elemental core (see Aura in your element description). A creature can only be affected by this aura once per round.'),
+								FactoryLogic.createAbilitySectionPackage('elemental-aura')
+							]
+						})
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createSwitchOptions({
+						id: 'deva-3-2',
+						name: 'Elemental Gift',
+						description: 'You gain a feature related to your element.',
+						switch: 'Elemental Core',
+						options: [
+							{
+								value: 'Air',
+								feature: FactoryLogic.feature.createBonus({
+									id: 'deva-3-2a',
+									field: FeatureField.Disengage,
+									value: 1
+								})
+							},
+							{
+								value: 'Earth',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-3-2b',
+									name: 'Elemental Gift',
+									description: 'When you take damage, you can use a triggered action to reduce it by your level.'
+								})
+							},
+							{
+								value: 'Fire',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-3-2c',
+									name: 'Elemental Gift',
+									description: 'When you reduce an enemy to 0 Stamina, your next strike deals bonus damage equal to your echelon.'
+								})
+							},
+							{
+								value: 'Green',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-3-2d',
+									name: 'Elemental Gift',
+									description: 'If you are winded at the start of your turn, you immediately regain 1 Stamina.'
+								})
+							},
+							{
+								value: 'Rot',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-3-2e',
+									name: 'Elemental Gift',
+									description: 'When you reduce an enemy to 0 Stamina, one adjacent enemy takes damage equal to your echelon.'
+								})
+							},
+							{
+								value: 'Void',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-3-2f',
+									name: 'Elemental Gift',
+									description: 'Once per encounter when you are targeted by a strike, you may teleport 3 squares before the attack resolves.'
+								})
+							},
+							{
+								value: 'Water',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-3-2g',
+									name: 'Elemental Gift',
+									description: 'When you shift, you can slide one adjacent creature 1 square. If the creature is willing, you can slide it one additional square.'
+								})
+							}
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createSwitchOptions({
+						id: 'deva-3-3',
+						name: 'Elemental Nature',
+						description: 'You manifest an affinity for your element.',
+						switch: 'Elemental Core',
+						options: [
+							{
+								value: 'Air',
+								feature: FactoryLogic.feature.createMultiple({
+									id: 'deva-1-1d',
+									features: [
+										FactoryLogic.feature.createSkillChoice({
+											id: 'deva-1-1d-skill',
+											selected: [ 'Jump' ]
+										}),
+										FactoryLogic.feature.createBonus({
+											id: 'deva-1-1d-speed',
+											field: FeatureField.Speed,
+											value: 1
+										})
+									]
+								})
+							},
+							{
+								value: 'Earth',
+								feature: FactoryLogic.feature.createMultiple({
+									id: 'deva-1-2d',
+									features: [
+										FactoryLogic.feature.createSkillChoice({
+											id: 'deva-1-2d-skill',
+											options: [ 'Architecture', 'Blacksmithing', 'Carpentry', 'Endurance', 'Jewelry', 'Lift' ],
+											count: 2
+										}),
+										FactoryLogic.feature.create({
+											id: 'deva-1-2d-carry',
+											name: 'Elemental Nature',
+											description: 'Your carrying capacity is doubled.'
+										})
+									]
+								})
+							},
+							{
+								value: 'Fire',
+								feature: FactoryLogic.feature.createMultiple({
+									id: 'deva-1-3d',
+									features: [
+										FactoryLogic.feature.createSkillChoice({
+											id: 'deva-1-3d-skill',
+											selected: [ 'Sabotage' ]
+										}),
+										FactoryLogic.feature.create({
+											id: 'deva-1-3d-grab',
+											name: 'Elemental Nature',
+											description: 'When an enemy attempts to grab you, they take fire damage equal to your echelon.'
+										})
+									]
+								})
+							},
+							{
+								value: 'Green',
+								feature: FactoryLogic.feature.createSkillChoice({
+									id: 'deva-1-4d',
+									options: [ 'Handle Animal', 'Monsters', 'Nature', 'Ride' ],
+									count: 2
+								})
+							},
+							{
+								value: 'Rot',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-5d',
+									name: 'Nature',
+									description: 'When an adjacent creature drops to 0 Stamina, you gain Stamina equal to your echelon.'
+								})
+							},
+							{
+								value: 'Void',
+								feature: FactoryLogic.feature.createSkillChoice({
+									id: 'deva-1-6d',
+									selected: [ 'Magic', 'Psionics' ]
+								})
+							},
+							{
+								value: 'Water',
+								feature: FactoryLogic.feature.createMultiple({
+									id: 'deva-1-7d',
+									features: [
+										FactoryLogic.feature.createSkillChoice({
+											id: 'deva-1-7d-skill',
+											selected: [ 'Swim' ]
+										}),
+										FactoryLogic.feature.createBonus({
+											id: 'deva-1-7d-disengage',
+											field: FeatureField.Disengage,
+											value: 1
+										})
+									]
+								})
+							}
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createSwitchOptions({
+						id: 'deva-3-4',
+						name: 'Elemental Passage',
+						description: 'You gain a special mobility feature based on your elemental core.',
+						switch: 'Elemental Core',
+						options: [
+							{
+								value: 'Air',
+								feature: FactoryLogic.feature.createMultiple({
+									id: 'deva-1-1e',
+									features: [
+										FactoryLogic.feature.createMovementMode({
+											id: 'deva-1-1e-fly',
+											mode: 'Fly'
+										}),
+										FactoryLogic.feature.create({
+											id: 'deva-1-1e-flying',
+											name: 'Elemental Passage',
+											description: 'While flying, you can stay aloft for a number of rounds equal to your Might score (minimum 1 round) before you fall. While flying at 3rd level or lower, you have damage weakness 5.'
+										})
+									]
+								})
+							},
+							{
+								value: 'Earth',
+								feature: FactoryLogic.feature.createMovementMode({
+									id: 'deva-1-2e',
+									mode: 'Burrow'
+								})
+							},
+							{
+								value: 'Fire',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-3e',
+									name: 'Passage',
+									description: `
+If you are adjacent to a square of fire, you can use one square of movement to teleport adjacent to any other square of fire on the encounter map.
+
+In addition, you can use a maneuver to summon a magical ember in an adjacent square; this ember lasts until the end of the encounter and counts as a square of fire for the purposes of your Passage teleportation feature, but has no other mechanical effect.`
+								})
+							},
+							{
+								value: 'Green',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-4e',
+									name: 'Passage',
+									description: `
+If you are adjacent to a square of vegetation, you can use one square of movement to teleport adjacent to any other square of vegetation on the encounter map.
+
+In addition, you can use a maneuver to summon vines that fill an adjacent square; these vines last until the end of the encounter and counts as a square of vegetation for the purposes of your Passage teleportation feature, but has no other mechanical effect.`
+								})
+							},
+							{
+								value: 'Rot',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-5e',
+									name: 'Passage',
+									description: 'If you are adjacent to a dead creature (at least size 1M), you can use a move action to teleport adjacent to any other dead creature within 5 squares'
+								})
+							},
+							{
+								value: 'Void',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-6e',
+									name: 'Passage',
+									description: `
+If you are adjacent to a square in darkness, you can use one square of movement to teleport adjacent to any other square in darkness on the encounter map.
+
+In addition, you can use a maneuver to fill an adjacent square with magical shade; this shade lasts until the end of the encounter and counts as a square of darkness for the purposes of your Passage teleportation feature, but has no other mechanical effect.`
+								})
+							},
+							{
+								value: 'Water',
+								feature: FactoryLogic.feature.createMultiple({
+									id: 'deva-1-7e',
+									features: [
+										FactoryLogic.feature.createMovementMode({
+											id: 'deva-1-7e-swim',
+											mode: 'Swim'
+										}),
+										FactoryLogic.feature.create({
+											id: 'deva-1-7e-water',
+											name: 'Elemental Passage',
+											description: 'Occupied squares do not count as difficult terrain for you.'
+										})
+									]
+								})
+							}
+						]
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createSwitchOptions({
+						id: 'deva-3-5',
+						name: 'Elemental Surge',
+						description: 'You gain a reactive feature based on your elemental core.',
+						switch: 'Elemental Core',
+						options: [
+							{
+								value: 'Air',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-1f',
+									name: 'Surge',
+									description: 'When an enemy moves adjacent to you, you may spend a surge to immediately shift 1 square.'
+								})
+							},
+							{
+								value: 'Earth',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-2f',
+									name: 'Surge',
+									description: 'When you are subjected to forced movement, you can spend a surge to gain Stability equal to twice your echelon.'
+								})
+							},
+							{
+								value: 'Fire',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-3f',
+									name: 'Surge',
+									description: 'On your turn, you can spend a surge to deal additional fire damage equal to your echelon on all your strikes this turn.'
+								})
+							},
+							{
+								value: 'Green',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-4f',
+									name: 'Surge',
+									description: 'Any time you or an ally within 5 squares spends a Recovery, you can spend a surge to allow an ally within 5 squares to regain Stamina equal to your level.'
+								})
+							},
+							{
+								value: 'Rot',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-5f',
+									name: 'Surge',
+									description: 'When you target an enemy with a strike, you can spend a surge to impose the bleeding condition (EoT).'
+								})
+							},
+							{
+								value: 'Void',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-6f',
+									name: 'Surge',
+									description: 'When an enemy targets you with a strike, you can spend a surge to impose a bane on the power roll.'
+								})
+							},
+							{
+								value: 'Water',
+								feature: FactoryLogic.feature.create({
+									id: 'deva-1-7f',
+									name: 'Surge',
+									description: 'When you are subjected to a save ends condition, you can spend a surge to change its duration to end of your next turn.'
+								})
+							}
+						]
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createSwitchOptions({
+						id: 'deva-3-6',
+						name: 'Elemental Ward',
+						description: 'You gain a resistance feature based on your elemental core.',
+						switch: 'Elemental Core',
+						options: [
+							{
+								value: 'Air',
+								feature: FactoryLogic.feature.createDamageModifier({
+									id: 'deva-1-1g',
+									modifiers: [
+										FactoryLogic.damageModifier.createPerLevel({
+											damageType: DamageType.Lightning,
+											modifierType: DamageModifierType.Immunity,
+											value: 1
+										})
+									]
+								})
+							},
+							{
+								value: 'Earth',
+								feature: FactoryLogic.feature.createConditionImmunity({
+									id: 'deva-1-2g',
+									conditions: [ ConditionType.Prone ]
+								})
+							},
+							{
+								value: 'Fire',
+								feature: FactoryLogic.feature.createDamageModifier({
+									id: 'deva-1-3g',
+									modifiers: [
+										FactoryLogic.damageModifier.createPerLevel({
+											damageType: DamageType.Fire,
+											modifierType: DamageModifierType.Immunity,
+											value: 1
+										})
+									]
+								})
+							},
+							{
+								value: 'Green',
+								feature: FactoryLogic.feature.createChoice({
+									id: 'deva-1-4g',
+									options: [
+										{
+											feature: FactoryLogic.feature.createDamageModifier({
+												id: 'deva-1-4ga',
+												modifiers: [
+													FactoryLogic.damageModifier.createPerLevel({
+														damageType: DamageType.Acid,
+														modifierType: DamageModifierType.Immunity,
+														value: 1
+													})
+												]
+											}),
+											value: 1
+										},
+										{
+											feature: FactoryLogic.feature.createDamageModifier({
+												id: 'deva-1-4gb',
+												modifiers: [
+													FactoryLogic.damageModifier.createPerLevel({
+														damageType: DamageType.Poison,
+														modifierType: DamageModifierType.Immunity,
+														value: 1
+													})
+												]
+											}),
+											value: 1
+										}
+									]
+								})
+							},
+							{
+								value: 'Rot',
+								feature: FactoryLogic.feature.createDamageModifier({
+									id: 'deva-1-5g',
+									modifiers: [
+										FactoryLogic.damageModifier.createPerLevel({
+											damageType: DamageType.Corruption,
+											modifierType: DamageModifierType.Immunity,
+											value: 1
+										})
+									]
+								})
+							},
+							{
+								value: 'Void',
+								feature: FactoryLogic.feature.createDamageModifier({
+									id: 'deva-1-6g',
+									modifiers: [
+										FactoryLogic.damageModifier.createPerLevel({
+											damageType: DamageType.Psychic,
+											modifierType: DamageModifierType.Immunity,
+											value: 1
+										})
+									]
+								})
+							},
+							{
+								value: 'Water',
+								feature: FactoryLogic.feature.createDamageModifier({
+									id: 'deva-1-7g',
+									modifiers: [
+										FactoryLogic.damageModifier.createPerLevel({
+											damageType: DamageType.Cold,
+											modifierType: DamageModifierType.Immunity,
+											value: 1
+										})
+									]
+								})
+							}
+						]
+					}),
+					value: 1
+				}
+			],
+			count: 'ancestry'
+		})
+	],
+	ancestryPoints: 3,
+	culture: FactoryLogic.createCulture('Deva', 'Nomadic, communal, labor.', CultureType.Ancestral, EnvironmentData.nomadic, OrganizationData.communal, UpbringingData.labor, 'Low Kuric')
+};
+
+const siabhra: Ancestry = {
+	id: 'ancestry-siabhra',
+	name: 'Síabhra',
+	description: `
+*By Andy Aiken*
+
+The síabhra (*SHEEV-rah*) are fey shapeshifters, sometimes called changelings or hollowfolk. Few would use these terms kindly.
+
+Síabhra live alongside humans (and, rarely, other humanoids), often undetected for decades. With a touch, a síabhra can mimic a face, a voice, a posture, even the subtle rhythms of speech and gesture that make a person feel *real*. Not perfectly, of course; always there is some subtle giveaway, a tell that the síabhra is somehow... wrong. Some síabhra maintain a single identity for years, carefully crafting lives from stolen mannerisms; others drift through crowded cities like ghosts in borrowed skin, changing their appearance every time they turn a corner.
+
+The síabhra have no homeland, no ancestral cities, no songs that are truly their own. They are a people without a people. Instead, they embed themselves into the cultures of others, adopting customs and mimicking belonging. They see themselves as survivors; others see them as parasites. They learn what is loved, what is feared, what is admired. They slip into roles that already exist and wear them convincingly. They are rarely leaders, rarely revolutionaries. They thrive in the spaces between - in borrowed offices, borrowed homes, borrowed affections.`,
+	features: [
+		FactoryLogic.feature.createAbility({
+			ability: FactoryLogic.createAbility({
+				id: 'siabhra-1',
+				name: 'Echo',
+				description: '"To hold, as ’twere, the mirror up to nature."',
+				type: FactoryLogic.type.createManeuver(),
+				keywords: [ AbilityKeyword.Magic ],
+				distance: [ FactoryLogic.distance.createMelee() ],
+				target: 'One creature',
+				sections: [
+					FactoryLogic.createAbilitySectionText(`
+You can use your maneuver to touch an adjacent creature (your **prime**) and echo some aspect of their essence. All síabhra can use *Echo Visage*, but many can echo other aspects.
+
+Touching your prime is automatic if they are a willing ally; if your prime is an enemy or is otherwise unwilling, you and your prime must make an opposed Agility test.
+
+Identity fragmentation comes with a cost: if you use *Echo* on a different creature before the end of your next turn, you take psychic damage equal to your level.`),
+					FactoryLogic.createAbilitySectionField({
+						name: 'Echo Visage',
+						effect: 'You take on the physical appearance of your prime. Your clothing doesn\'t change, but your size can become 1S, 1M, or 1L to match your prime. This is a purely cosmetic change; you don\'t gain any abilities that your prime has due to their physiology. You retain this appearance until you dismiss it (which requires no action), you use *Echo Visage* again to take on a different appearance, or you die.'
+					}),
+					FactoryLogic.createAbilitySectionPackage('echo')
+				]
+			})
+		}),
+		FactoryLogic.feature.create({
+			id: 'siabhra-2',
+			name: 'Lightweight',
+			description: 'Due to your unnatural physiology, your body is unnaturally light. Whenever another creature attempts to force move you, you treat your size as one size smaller than it is.'
+		}),
+		FactoryLogic.feature.createSkillChoice({
+			id: 'siabhra-3',
+			name: 'Social Parasite',
+			description: 'Síabhra are adept at learning the customs of those they live alongside and presenting themselves as a different person.',
+			options: [ 'Culture', 'Disguise', 'Perform', 'Read Person', 'Society' ],
+			count: 2
+		}),
+		FactoryLogic.feature.createChoice({
+			id: 'siabhra-4',
+			name: 'Purchased Traits',
+			options: [
+				{
+					feature: FactoryLogic.feature.createPackageContent({
+						id: 'siabhra-4-1',
+						name: 'Echo Aspect',
+						description: 'Select a characteristic; you can use the higher of your value or your prime\'s value for tests using that characteristic until the end of your next turn.',
+						tag: 'echo'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createPackageContent({
+						id: 'siabhra-4-2',
+						name: 'Echo Expertise',
+						description: 'Select one skill your prime is proficient in; you are proficient in that skill until you use *Echo Expertise* again.',
+						tag: 'echo'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createPackageContent({
+						id: 'siabhra-4-3',
+						name: 'Echo Technique',
+						description: 'Select one of your prime\'s signature abilities; you can use that ability once before the end of your next turn (you also gain any necessary weapon proficiencies). When you use the echoed ability, you take a bane on any power rolls you make as part of it.',
+						tag: 'echo'
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createPackageContent({
+						id: 'siabhra-4-4',
+						name: 'Echo Tongue',
+						description: 'Select a language your prime knows; you know that language until you use *Echo Tongue* again.',
+						tag: 'echo'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createPackageContent({
+						id: 'siabhra-4-5',
+						name: 'Siphon Affliction',
+						description: 'Select one condition affecting your prime. That condition is removed from your prime and transferred to you, even if you would ordinarily be immune to it.',
+						tag: 'echo'
+					}),
+					value: 1
+				},
+				{
+					feature: FactoryLogic.feature.createPackageContent({
+						id: 'siabhra-4-6',
+						name: 'Siphon Vitality',
+						description: `
+If your prime has recoveries, they lose a recovery; you regain stamina equal to their recovery value.
+
+If your prime does not have recoveries, roll 1d10 and add your level; your prime loses that amount of stamina, and you regain that amount of stamina.`,
+						tag: 'echo'
+					}),
+					value: 2
+				}
+			],
+			count: 'ancestry'
+		})
+	],
+	ancestryPoints: 3,
+	culture: undefined
+};
+
 const solar: Ancestry = {
 	id: 'ancestry-solar',
 	name: 'Solar',
@@ -412,11 +2217,11 @@ Additionally, you add your level to project rolls to craft projects and whenever
 							}),
 							FactoryLogic.createAbilitySectionSpend({
 								effect: `
-	For each wonder spent, choose one of the following enhancements:
+For each wonder spent, choose one of the following enhancements:
 
-	* A target can spend a Recovery.
-	* A target can end one effect on a target that is ended by a saving throw or that ends at the end of their turn.
-	* The target gains one additional surge.`,
+* A target can spend a Recovery.
+* A target can end one effect on a target that is ended by a saving throw or that ends at the end of their turn.
+* The target gains one additional surge.`,
 								repeatable: true
 							})
 						]
@@ -2606,901 +4411,6 @@ Once you use this feature, you cannot do so again until you gain at least 1 vict
 	characteristics: []
 };
 
-const scion: HeroClass = {
-	id: 'class-scion',
-	name: 'Scion',
-	description: `
-*By SurfingBird*
-
-You were deemed worthy of a secret Art known only to a chosen few, allowing you to weave steel and magic into a single, fluid dance. Passed down through an unbroken chain of master and disciple, this ancient discipline was entrusted to you, its esoteric techniques guiding you toward the cultivation of Balance: a harmonious alignment of movement, feeling, and intent.
-
-As a Scion, you are the the quiet before the storm. You move like the wind, and strike as lightning. Your flexibility is unmatched - each blow empowered to suit the moment, whether to debilitate foes, or bring their end closer still. The battlefield is a canvas upon which you paint your masterpiece, and your Art is your brush.`,
-	type: 'standard',
-	subclassName: 'Art',
-	subclassCount: 1,
-	primaryCharacteristicsOptions: [
-		[ Characteristic.Agility, Characteristic.Reason ]
-	],
-	primaryCharacteristics: [],
-	featuresByLevel: [
-		{
-			level: 1,
-			features: [
-				FactoryLogic.feature.createBonus({
-					id: 'scion-O9HoOpa7euJhtYOU',
-					name: 'Stamina',
-					field: FeatureField.Stamina,
-					value: 21,
-					valuePerLevel: 9
-				}),
-				FactoryLogic.feature.createBonus({
-					id: 'scion-JOGoalJHZrxV29hI',
-					name: 'Recoveries',
-					field: FeatureField.Recoveries,
-					value: 8
-				}),
-				FactoryLogic.feature.createHeroicResource({
-					id: 'scion-AQVZO67b5ARr837x',
-					name: 'Balance',
-					gains: [
-						{
-							trigger: 'Start of your turn',
-							value: '2',
-							tag: 'Start 1'
-						},
-						{
-							trigger: 'The first time in a combat round that you or an ally within 10 squares of you uses an ability with a Weapon tag',
-							value: '1',
-							tag: 'Weapon 1'
-						},
-						{
-							tag: 'Magic 1',
-							trigger: 'The first time in a combat round that you or an ally within 10 squares of you uses an ability with a Magic tag',
-							value: '1'
-						}
-					]
-				}),
-				FactoryLogic.feature.createKitChoice({
-					id: 'scion-DPrp53cyrPmKlK8Q',
-					name: 'Kit',
-					description: 'You can use and the gain the benefits of a kit.'
-				}),
-				FactoryLogic.feature.createSkillChoice({
-					id: 'scion-k9atwGnHLUisOS3g',
-					selected: [ AbilityKeyword.Magic ]
-				}),
-				FactoryLogic.feature.createSkillChoice({
-					id: 'scion-szzG0j9VXTie1vzU',
-					selected: [ 'Strategy' ]
-				}),
-				FactoryLogic.feature.createSkillChoice({
-					id: 'scion-wWXEEpo7fYtbd7H5',
-					listOptions: [ SkillList.Exploration ],
-					count: 2
-				}),
-				FactoryLogic.feature.createAbility({
-					ability: FactoryLogic.createAbility({
-						id: 'scion-WX9IShLh3LTdbYEZ',
-						name: 'Enweave',
-						description: 'You weave magic into your weapon, preparing to unleash it with your next strike.',
-						type: FactoryLogic.type.createManeuver(),
-						keywords: [ AbilityKeyword.Magic ],
-						distance: [ FactoryLogic.distance.createSpecial('') ],
-						target: 'Self',
-						cost: 1,
-						sections: [
-							FactoryLogic.createAbilitySectionText(`
-Choose one of the following effects, which applies to one target of the next damaging melee weapon ability you use:
-
-* **Flame Strike**: Damage becomes fire. The target takes fire damage equal to triple your Reason score.
-* **Gale Strike**: Damage becomes lightning. You can either push the target, or yourself away from the target, a distance equal to double your Reason score.
-* **Freeze Strike**: Damage becomes cold. The target takes cold damage equal to your Reason score. The target is slowed (save ends).
-* **Crimson Strike**: Damage becomes corruption. The target is bleeding (save ends).
-* **Umbral Strike**: Damage becomes psychic. The target has damage weakness equal to your Reason score (save ends).
-* **Explosive Strike**: Damage becomes sonic. Each enemy in range 2 of the target is dealt sonic damage equal to your Reason score.
-
-Effects other than the changing of the damage type are applied after the ability is resolved. If you use this ability more than once before it applies to an ability, you can choose one of the damage types to apply to the affected ability, but apply all of the effects.
-
-You cannot use Enweave more than twice before applying its effect to an ability.`),
-							FactoryLogic.createAbilitySectionSpend({
-								value: 2,
-								effect: 'This ability becomes a free maneuver instead.'
-							})
-						]
-					})
-				}),
-				FactoryLogic.feature.createClassAbilityChoice({
-					id: 'scion-kqUeQx0h23EhxxUc',
-					cost: 'signature'
-				}),
-				FactoryLogic.feature.createClassAbilityChoice({
-					id: 'scion-iRn3qBxVIwTtBoRi',
-					cost: 3
-				}),
-				FactoryLogic.feature.createClassAbilityChoice({
-					id: 'scion-nl3lpEXmEYpYBZVW',
-					cost: 5
-				})
-			]
-		},
-		{
-			level: 2,
-			features: [
-				FactoryLogic.feature.createPerk({
-					id: 'scion-rEyShVuQmHFhyvRt',
-					lists: [ PerkList.Exploration, PerkList.Lore, PerkList.Supernatural ]
-				})
-			]
-		},
-		{
-			level: 3,
-			features: [
-				FactoryLogic.feature.create({
-					id: 'scion-OVUKkhTfFMlLKdd6',
-					name: 'Cascading Enweave',
-					description: 'When using Enweave, you may spend 1 balance to make the chosen effect apply to an additional target within range 5 of the target of your next melee weapon ability. You may choose to use this spend effect more than once, each time costing 1 more balance than the previous time. Each additional target needs to be within range 5 of the previous affected target.'
-				}),
-				FactoryLogic.feature.createClassAbilityChoice({
-					id: 'scion-nHkXlESMAT6WMexB',
-					cost: 7
-				})
-			]
-		}
-	],
-	abilities: [
-		FactoryLogic.createAbility({
-			id: 'scion-psE8QwJkMo5FGahf',
-			name: 'Aether Lash',
-			description: 'With a flick of your blade, you etch a line of invisible force, preparing to strike.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.createMelee() ],
-			target: 'One creature or object',
-			cost: 'signature',
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '2 + A damage',
-						tier2: '5 + A damage',
-						tier3: '8 + A damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('Before choosing the target of this ability and resolving the power roll, choose a creature or object within range 5, then either vertical pull 4 the chosen creature or object, or vertical pull 4 yourself from the chosen creature or object\'s space. When a creature is pulled into the air this way, you may choose to make it so they stay aloft until the end of your turn, and lose all stability while in the air.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-Kyx8UrFs78d0nDWB',
-			name: 'Blade Barrier',
-			description: 'A sphere of shimmering force unfurls around you as you harry your foe.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic ],
-			distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 1 }) ],
-			target: 'Each creature within area',
-			cost: 'signature',
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '2 damage, push 1',
-						tier2: '3 damage, push 1',
-						tier3: '5 damage, push 1'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('This ability ignores stability. Gain damage immunity equal to your Reason until the end of your next turn.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-K4iussi8iLx5dRET',
-			name: 'Crescent Arc',
-			description: 'A precise arc cuts through your foes with the grace of moonlight.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Wall, value: 3, within: 1 }) ],
-			target: 'Each enemy within area',
-			cost: 'signature',
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '2 damage',
-						tier2: '5 damage',
-						tier3: '7 damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('The wall area is only used for targeting, and does not create an actual wall. Each increase to the wall\'s length is doubled.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-sa5It8BiU7UVMo3C',
-			name: 'Essence Lance',
-			description: 'You hurl a lance of force that pierces not flesh, but the core of their being.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Ranged, AbilityKeyword.Strike ],
-			distance: [ FactoryLogic.distance.createRanged(10) ],
-			target: 'One creature or object',
-			cost: 'signature',
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '6 + R damage',
-						tier2: '8 + R damage',
-						tier3: '11 + R damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('The target’s characteristic scores are treated as lower by 1 for the sake of resisting potencies (save ends).')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-SeeQb3AuYSt7LJ2u',
-			name: 'Still Edge',
-			description: 'You cut into your foe, leaving potential energy in their form - threatening to snap into explosive motion.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.createMelee() ],
-			target: 'One creature',
-			cost: 'signature',
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '3 + A damage',
-						tier2: '6 + A damage',
-						tier3: '9 + A damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('If the target willingly moves before the end of their next turn, they take damage equal to twice your Reason score.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-nEF5J2Lof7zx5C0S',
-			name: 'Sever the Moment',
-			description: 'You read the flaw in their stance and cut deep.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.createMelee() ],
-			target: 'One creature',
-			cost: 3,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '6 + A damage',
-						tier2: '9 + A damage',
-						tier3: '13 + A damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('If the target is suffering from an effect that is ended by a saving throw, this ability deals an additional 10 damage.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-KvsM9dDuVqzUpIfn',
-			name: 'Full Moon Arc',
-			description: 'Your blade traces a perfect circle in red.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Melee, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 1 }) ],
-			target: 'Each enemy within area',
-			cost: 3,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '6 damage',
-						tier2: '9 damage',
-						tier3: '13 damage'
-					})
-				)
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-9LLTrUY85AVyIcHI',
-			name: 'Veil Piercer',
-			description: 'You lance through a veil of mist, fading from sight.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Ranged, AbilityKeyword.Strike ],
-			distance: [ FactoryLogic.distance.createRanged(10) ],
-			target: 'One creature',
-			cost: 3,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '8 + R damage',
-						tier2: '12 + R damage',
-						tier3: '16 + R damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('Create a 1 burst area of mist which provides concealment to allies that lasts until the end of your next turn. Allies inside the mist can hide even while observed.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-WnkiVZGxk1aSzG4m',
-			name: 'Sanguine Thread',
-			description: 'Your blade draws a line through flesh, and a thread of life follows - woven back into your form.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.createMelee() ],
-			target: 'One creature or object',
-			cost: 3,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '4 + A damage',
-						tier2: '7 + A damage',
-						tier3: '11 + A damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('You gain temporary Stamina equal to half the damage dealt by this ability.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-XZxWE6QBTKjvPCYM',
-			name: 'Lightning Strike',
-			description: 'You become lightning, flashing from one place to another, leaving ruin in your wake.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Line, value: 10, value2: 1, within: 1 }) ],
-			target: 'Each enemy within area',
-			cost: 5,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '6 lightning damage',
-						tier2: '10 lightning damage',
-						tier3: '14 lightning damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('You teleport to a square on the opposite side of the area before making the power roll.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-D2YGEm6Ic7QrUCwR',
-			name: 'Glacial Bloom',
-			description: 'Fractals of ice bloom outward and shatter across your foes.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic, AbilityKeyword.Ranged ],
-			distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Cube, value: 3, within: 10 }) ],
-			target: 'Each enemy within area',
-			cost: 5,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '5 cold damage, A < [weak], slowed (save ends)',
-						tier2: '8 cold damage, A < [average], slowed (save ends)',
-						tier3: '11 cold damage, A < [strong], restrained (save ends)'
-					})
-				)
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-cHb7KRKmqjtzEDNA',
-			name: 'Crashing Wave',
-			description: 'Leaping skyward, you crash down with the weight of the ocean.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Cube, value: 3, within: 1 }) ],
-			target: 'Each enemy within area',
-			cost: 5,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '6 damage; push 2',
-						tier2: '9 damage; push 4',
-						tier3: '13 damage; push 6'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('You can jump up to 2 squares before resolving the power roll. The targets are force moved one at a time, starting with the targets nearest to you, and can be pushed into other targets in the area.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-eGFSaMDQOv3qpxBX',
-			name: 'Spirit Rend',
-			description: 'You carve through your foe’s spirit, leaving their mind reeling.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.createMelee() ],
-			target: 'One creature',
-			cost: 5,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '6 + A psychic damage; I < [weak], dazed (save ends)',
-						tier2: '10 + A psychic damage; I < [average], dazed (save ends)',
-						tier3: '14 + A psychic damage; I < [strong], dazed (save ends)'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('While dazed this way, the target\'s characteristic scores are treated as lower by 1 for the sake of resisting potencies.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-8uSVdpHtYzQ49cU2',
-			name: 'Cross Slash',
-			description: 'You cleave the air in multiple directions, unleashing blades of pure force.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic, AbilityKeyword.Melee ],
-			distance: [ FactoryLogic.distance.createSpecial('Four 5 x 1 lines within 1') ],
-			target: 'Each enemy within area',
-			cost: 7,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '6 damage',
-						tier2: '10 damage',
-						tier3: '14 damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('Overlapping lines are treated as a single area.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-mejqYrJQuCnj6X12',
-			name: 'Godspeed',
-			description: 'You surge with arcane power, moving with impossible speed.',
-			type: FactoryLogic.type.createManeuver({ free: true }),
-			keywords: [ AbilityKeyword.Magic ],
-			distance: [ FactoryLogic.distance.createMelee() ],
-			target: 'Self',
-			cost: 7,
-			sections: [
-				FactoryLogic.createAbilitySectionText('For the rest of the combat encounter you have an additional maneuver per turn, and gain a +5 bonus to speed.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-VNtILg0JEcSZMXIw',
-			name: 'Reaper\'s Edge',
-			description: 'There is power in death.',
-			type: FactoryLogic.type.createMain(),
-			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
-			distance: [ FactoryLogic.distance.createMelee() ],
-			target: 'One creature or object',
-			cost: 7,
-			sections: [
-				FactoryLogic.createAbilitySectionRoll(
-					FactoryLogic.createPowerRoll({
-						characteristic: Characteristic.Agility,
-						tier1: '12 + A damage',
-						tier2: '18 + A damage',
-						tier3: '24 + A damage'
-					})
-				),
-				FactoryLogic.createAbilitySectionText('If this ability reduces a creature to 0 Stamina, gain 5 balance.')
-			]
-		}),
-		FactoryLogic.createAbility({
-			id: 'scion-EpYMy07L6kpxn0tk',
-			name: 'Spectral Blades',
-			description: 'You summon spectral blades, suspended in poise, released with but a thought.',
-			type: FactoryLogic.type.createManeuver(),
-			keywords: [ AbilityKeyword.Magic ],
-			distance: [ FactoryLogic.distance.createSelf() ],
-			target: 'Self',
-			cost: 7,
-			sections: [
-				FactoryLogic.createAbilitySectionText('Place a d6 die set to 6 to track this effect. Once a turn you may reduce the die by any amount up to its current value. Then, distribute that many spectral blades among enemies within range 5 as you choose. Each blade deals 4 + your Reason score in damage. You cannot assign more than one blade per enemy. In addition, whenever an enemy in range 5 is affected by a potency effect, you may reduce the die by 1 to increase the potency of the ability by 1.')
-			]
-		})
-	],
-	subclasses: [
-		{
-			id: 'scion-vGtuuw0cYpAkkPUN',
-			name: 'Blinkblade',
-			description: 'A master of teleportation magic, the Blinkblades weave in and out of reach with uncanny speed - difficult to catch, and harder still to escape.',
-			featuresByLevel: [
-				{
-					level: 1,
-					features: [
-						FactoryLogic.feature.createSkillChoice({
-							id: 'scion-R6zmbAYzj5QQnf5r',
-							selected: [ 'Gymnastics' ]
-						}),
-						FactoryLogic.feature.createMultiple({
-							id: 'scion-d7U62IAB3V2YaasD',
-							name: 'Phase Step',
-							features: [
-								FactoryLogic.feature.create({
-									id: 'scion-d7U62IAB3V2YaasDa',
-									name: 'Phase Step',
-									description: 'Whenever you disengage, you may teleport instead of shifting.'
-								}),
-								FactoryLogic.feature.createBonus({
-									id: 'scion-d7U62IAB3V2YaasDb',
-									field: FeatureField.Disengage,
-									value: 1
-								})
-							]
-						}),
-						FactoryLogic.feature.createAbility({
-							ability: FactoryLogic.createAbility({
-								id: 'scion-UZK6xyl5g71nt7t8',
-								name: 'Blink',
-								type: FactoryLogic.type.createManeuver(),
-								keywords: [ AbilityKeyword.Magic ],
-								distance: [ FactoryLogic.distance.createSelf() ],
-								target: 'Self',
-								sections: [
-									FactoryLogic.createAbilitySectionText('You teleport up to 7 squares.'),
-									FactoryLogic.createAbilitySectionSpend({
-										value: 5,
-										effect: 'If used immediately after performing an ability that targets only one enemy, you may repeat that ability at your target destination without needing to spend the base cost as long as it costs 5 balance or fewer.'
-									})
-								]
-							})
-						}),
-						FactoryLogic.feature.createAbility({
-							ability: FactoryLogic.createAbility({
-								id: 'scion-GN04C4n7iSFme7EB',
-								name: 'Flicker Step',
-								description: 'You instinctively teleport to avoid danger.',
-								type: FactoryLogic.type.createTrigger('You take damage'),
-								keywords: [ AbilityKeyword.Magic ],
-								distance: [ FactoryLogic.distance.createSelf() ],
-								target: 'Self',
-								sections: [
-									FactoryLogic.createAbilitySectionText('You take half the damage, you can then teleport up to 4 squares after the triggering effect resolves.'),
-									FactoryLogic.createAbilitySectionSpend({
-										repeatable: true,
-										effect: 'You teleport an additional 2 squares for each balance spent.'
-									})
-								]
-							})
-						})
-					]
-				},
-				{
-					level: 2,
-					features: [
-						FactoryLogic.feature.create({
-							id: 'scion-3cCLubzSJqOAXhTt',
-							name: 'Afterimage',
-							description: 'Whenever you teleport by any means, you leave a distracting afterimage in your previous location until the start of your next turn. Power rolls targeting enemies adjacent to one or more afterimages gain an edge. The afterimage does not occupy space and cannot be targeted or destroyed. At the start of any turn when an afterimage fades, you can choose to teleport to its location.'
-						}),
-						FactoryLogic.feature.createChoice({
-							id: 'scion-O1IBnmfpWK2A0Pzm',
-							name: '2nd Level Blinkblade Ability',
-							options: [
-								{
-									feature: FactoryLogic.feature.createAbility({
-										ability: FactoryLogic.createAbility({
-											id: 'scion-iUFlQNI03qMYfk3o',
-											name: 'Phase Assault',
-											description: 'You blink between foes, each reappearance marked by a precise, cutting strike.',
-											type: FactoryLogic.type.createMain(),
-											keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
-											distance: [ FactoryLogic.distance.createSpecial('') ],
-											target: 'Special',
-											cost: 5,
-											sections: [
-												FactoryLogic.createAbilitySectionRoll(
-													FactoryLogic.createPowerRoll({
-														characteristic: Characteristic.Agility,
-														tier1: '3 damage',
-														tier2: '6 damage',
-														tier3: '9 damage'
-													})
-												),
-												FactoryLogic.createAbilitySectionText('Choose a target within range 5, teleport to an unoccupied space adjacent to it, then apply the power roll result to it. Repeat this effect up to 3 more times. The same target cannot be chosen more than once.')
-											]
-										})
-									}),
-									value: 1
-								},
-								{
-									feature: FactoryLogic.feature.createAbility({
-										ability: FactoryLogic.createAbility({
-											id: 'scion-LFPajs7vWR1FdtDa',
-											name: 'Horizon Step',
-											description: 'None can escape your reach.',
-											type: FactoryLogic.type.createMain(),
-											keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
-											distance: [ FactoryLogic.distance.createMelee() ],
-											target: 'One creature',
-											cost: 5,
-											sections: [
-												FactoryLogic.createAbilitySectionRoll(
-													FactoryLogic.createPowerRoll({
-														characteristic: Characteristic.Agility,
-														tier1: '14 + A damage',
-														tier2: '18 + A damage',
-														tier3: '23 + A damage'
-													})
-												),
-												FactoryLogic.createAbilitySectionText('You may teleport to up to 15 squares before this strike.')
-											]
-										})
-									}),
-									value: 1
-								}
-							]
-						})
-					]
-				},
-				{
-					level: 3,
-					features: []
-				}
-			],
-			abilities: [],
-			selected: false
-		},
-		{
-			id: 'scion-nCi6Ufmfz74H70Pr',
-			name: 'Runewright',
-			description: 'The Runewright wields the ancient craft of runebranding to sear volatile runes onto living beings and shape the battlefield through groundlaid writs.',
-			featuresByLevel: [
-				{
-					level: 1,
-					features: [
-						FactoryLogic.feature.createSkillChoice({
-							id: 'scion-5hK9y3rFtS2uW5d0',
-							selected: [ 'Mechanics' ]
-						}),
-						FactoryLogic.feature.createAbility({
-							ability: FactoryLogic.createAbility({
-								id: 'scion-PG0F4c5cIccZlDl4',
-								name: 'Runebrand',
-								description: 'You imprint a runic sigil on your target, priming it for detonation.',
-								type: FactoryLogic.type.createManeuver(),
-								keywords: [ AbilityKeyword.Magic ],
-								distance: [ FactoryLogic.distance.createMelee() ],
-								target: 'One creature or object',
-								cost: 1,
-								sections: [
-									FactoryLogic.createAbilitySectionText('When using this ability, choose one of the Enweave effects, ignoring the component that changes the damage type of your next strike. You brand your target with a rune imbued by the effect you chose, priming it for detonation. At the end of your turn, the rune is primed. When a rune is primed, the next time the branded target is damaged, the rune detonates, applying its effect to every enemy within range 2 of it. If the branded effect already has an area, it is increased by 2 instead. If the branded effect has a push effect, it is relative to the branded target’s location.'),
-									FactoryLogic.createAbilitySectionSpend({
-										value: 2,
-										effect: 'The rune is immediately primed, allowing you to detonate it this turn.'
-									})
-								]
-							})
-						}),
-						FactoryLogic.feature.createAbility({
-							ability: FactoryLogic.createAbility({
-								id: 'scion-MnzMxsJZtPA8FrFs',
-								name: 'Ensnaring Rune',
-								description: 'Your foe steps on one of your many traps.',
-								type: FactoryLogic.type.createTrigger('The target moves'),
-								keywords: [ AbilityKeyword.Magic ],
-								distance: [ FactoryLogic.distance.createRanged(10) ],
-								target: 'One enemy',
-								sections: [
-									FactoryLogic.createAbilitySectionText('The target takes damage equal to triple your Reason score.'),
-									FactoryLogic.createAbilitySectionSpend({
-										effect: 'If the target has I < [average], they are slowed (EoT).'
-									})
-								]
-							})
-						})
-					]
-				},
-				{
-					level: 2,
-					features: [
-						FactoryLogic.feature.create({
-							id: 'scion-KXLNgaULFP7C3Kkx',
-							name: 'Liminal Runes',
-							description: 'An enemy carrying an undetonated runebrand receives a bane on their power rolls. An ally carrying an undetonated runebrand gains an edge on their power rolls.'
-						}),
-						FactoryLogic.feature.createChoice({
-							id: 'scion-r7jDReOjykBnFpp2',
-							name: '2nd-Level Art Ability',
-							options: [
-								{
-									feature: FactoryLogic.feature.createAbility({
-										ability: FactoryLogic.createAbility({
-											id: 'scion-HnQmrJFiyb8LEN1l',
-											name: 'Writ of Power',
-											description: 'You brand an arcane writ onto the ground, scorching foes, or soothing allies.',
-											type: FactoryLogic.type.createManeuver(),
-											keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic ],
-											distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 2 }) ],
-											target: 'Each enemy within area',
-											cost: 5,
-											sections: [
-												FactoryLogic.createAbilitySectionText(`
-The area remains until the end of the encounter or you are dying. Choose one of the following effects to apply to the area:
-
-* **Writ of Flame**: Each enemy who enters the area for the first time in a combat round or starts their turn there takes damage equal to triple your Reason score.
-* **Writ of Sanctuary**: Each ally, or yourself, who enters the area for the first time in a combat round or starts their turn there may either spend a recovery, or end one effect that is ended by a saving throw or ends at the end of their turn.`)
-											]
-										})
-									}),
-									value: 1
-								},
-								{
-									feature: FactoryLogic.feature.createAbility({
-										ability: FactoryLogic.createAbility({
-											id: 'scion-amPXemJUIcHPs4Zx',
-											name: 'Writ of Binding',
-											description: 'Arcane chains erupt from the ground, coiling around your foe.',
-											type: FactoryLogic.type.createMain(),
-											keywords: [ AbilityKeyword.Magic, AbilityKeyword.Ranged ],
-											distance: [ FactoryLogic.distance.createRanged(5) ],
-											target: 'One creature',
-											cost: 5,
-											sections: [
-												FactoryLogic.createAbilitySectionRoll(
-													FactoryLogic.createPowerRoll({
-														characteristic: Characteristic.Reason,
-														tier1: '6 damage; M < [weak], restrained (save ends)',
-														tier2: '10 damage; M < [average], restrained (save ends)',
-														tier3: '14 damage; M < [strong], restrained (save ends)'
-													})
-												),
-												FactoryLogic.createAbilitySectionText('While restrained this way, the target cannot teleport by any means.')
-											]
-										})
-									}),
-									value: 1
-								}
-							]
-						})
-					]
-				},
-				{
-					level: 3,
-					features: []
-				}
-			],
-			abilities: [],
-			selected: false
-		},
-		{
-			id: 'scion-HK8oez2ay5ZQNhfp',
-			name: 'Soulforged',
-			description: 'The Soulforged binds a fragment of their soul into a chosen weapon, forging a sentient extension of their will - a Soulblade. Through this bond, they shape and empower their blade, adapting its form and function to meet the shifting demands of battle.',
-			featuresByLevel: [
-				{
-					level: 1,
-					features: [
-						FactoryLogic.feature.createSkillChoice({
-							id: 'scion-YMhhEe1upKHfymOH',
-							selected: [ 'Empathize' ]
-						}),
-						FactoryLogic.feature.create({
-							id: 'scion-1jXjv5q9Tmlax2TD',
-							name: 'Soulbound',
-							description: `
-Your Soulblade is more than a weapon - it's an extension of your soul. Its appearance reflects the innermost truth of who you are. You are never truly separated from it; if it's not in your hands, you can summon it instantly as a free maneuver.
-
-Your Soulforged abilities can only be used with your Soulblade. To bond with a new weapon, you must perform a ritual lasting several hours to transfer your bound soul fragment from another weapon to it. You may bond with as many weapons as a kit grants.
-
-By default, your Soulblade is sentient and capable of communicating with you, though you may choose to forgo this aspect of it.`
-						}),
-						FactoryLogic.feature.createAbility({
-							ability: FactoryLogic.createAbility({
-								id: 'scion-uajSniPPGVxpq9jX',
-								name: 'Soulshape',
-								description: 'By reshaping the bound fragment of your soul, you persuade your Soulblade to take on a new form.',
-								type: FactoryLogic.type.createManeuver(),
-								keywords: [ AbilityKeyword.Magic ],
-								distance: [ FactoryLogic.distance.createSelf() ],
-								target: 'Self',
-								sections: [
-									FactoryLogic.createAbilitySectionText(`
-Choose a modified form for your Soulblade, each granting a distinct effect until the start of your next turn:
-
-* **Expansive**: Melee weapon abilities have their area increased by 1. If the area is a line, increase the size of the larger dimension by 2 instead.
-* **Powerful**: Melee weapon abilities with rolled damage have their damage increased by your Reason score. If the ability force moves a target, the forced movement distance gains a bonus equal to your Reason score.
-* **Resonant**: Melee weapon abilities have their potency increased by 1.
-* **Reaching**: Melee weapon abilities have their distance increased by double your Reason.`),
-									FactoryLogic.createAbilitySectionSpend({
-										value: 2,
-										effect: 'Any numeric benefit of the chosen form is doubled in value.'
-									})
-								]
-							})
-						}),
-						FactoryLogic.feature.createAbility({
-							ability: FactoryLogic.createAbility({
-								id: 'scion-QfuRewVhDSo3Fcnh',
-								name: 'Blade\'s Will',
-								description: 'As if moving by its own accord, your Soulblade parries and ripostes.',
-								type: FactoryLogic.type.createTrigger('A creature deals damage to the target.'),
-								keywords: [ AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Weapon ],
-								distance: [ FactoryLogic.distance.createRanged(5) ],
-								target: 'Self or one ally',
-								sections: [
-									FactoryLogic.createAbilitySectionText('You can shift a number of squares equal to your Reason score. If the target is you, or if you end this shift adjacent to the target, the target takes half the damage.'),
-									FactoryLogic.createAbilitySectionSpend({
-										value: 2,
-										effect: 'Make a melee free strike against the creature that damaged the target.'
-									})
-								]
-							})
-						})
-					]
-				},
-				{
-					level: 2,
-					features: [
-						FactoryLogic.feature.createMultiple({
-							id: 'scion-bzETrObsFfukTsKF',
-							name: 'Soul Instinct',
-							features: [
-								FactoryLogic.feature.create({
-									id: 'scion-bzETrObsFfukTsKFa',
-									name: 'Soul Instinct',
-									description: 'Once per turn, you can make a melee free strike whenever a creature moves from a square adjacent to you to another square adjacent to you.'
-								}),
-								FactoryLogic.feature.createBonus({
-									id: 'scion-bzETrObsFfukTsKFb',
-									field: FeatureField.Stability,
-									value: 1
-								})
-							]
-						}),
-						FactoryLogic.feature.createChoice({
-							id: 'scion-zMh3T36dRkETvXP5',
-							name: '2nd-Level Soulforged Ability',
-							options: [
-								{
-									feature: FactoryLogic.feature.createAbility({
-										ability: FactoryLogic.createAbility({
-											id: 'scion-cvF4m32z5QKl8fuv',
-											name: 'Soul Form',
-											description: 'Your Soulblade takes its true form, flaring with power.',
-											type: FactoryLogic.type.createManeuver(),
-											keywords: [ AbilityKeyword.Magic ],
-											distance: [ FactoryLogic.distance.createSelf() ],
-											target: 'Self',
-											cost: 5,
-											sections: [
-												FactoryLogic.createAbilitySectionText('Until the end of the encounter, whenever you gain the benefit of a Soulshape form, you may choose an additional form to benefit from. You can use the spend effect for no cost on both form benefits. You may use the Soulshape maneuver.')
-											]
-										})
-									}),
-									value: 1
-								},
-								{
-									feature: FactoryLogic.feature.createAbility({
-										ability: FactoryLogic.createAbility({
-											id: 'scion-QKw9odWNUqve0maB',
-											name: 'Soul Spiral',
-											description: 'Your Soulblade unfurls in a violent spiral, crashing through foes.',
-											type: FactoryLogic.type.createMain(),
-											keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic, AbilityKeyword.Melee, AbilityKeyword.Weapon ],
-											distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 2 }) ],
-											target: 'Each enemy within area',
-											cost: 5,
-											sections: [
-												FactoryLogic.createAbilitySectionRoll(
-													FactoryLogic.createPowerRoll({
-														characteristic: Characteristic.Agility,
-														tier1: '5 damage',
-														tier2: '8 damage; push 1',
-														tier3: '11 damage; push 3'
-													})
-												)
-											]
-										})
-									}),
-									value: 1
-								}
-							]
-						})
-					]
-				},
-				{
-					level: 3,
-					features: []
-				}
-			],
-			abilities: [],
-			selected: false
-		}
-	],
-	level: 1,
-	characteristics: []
-};
-
 const vessel: HeroClass = {
 	id: 'class-vessel',
 	name: 'Vessel',
@@ -4859,12 +5769,18 @@ export const community: Sourcebook = {
 	adventures: [],
 	ancestries: [
 		aranox,
+		asomath,
+		beastfolk,
+		deva,
+		gallGuardian,
+		ironbound,
+		oakling,
+		siabhra,
 		solar
 	],
 	careers: [],
 	classes: [
 		magewright,
-		scion,
 		vessel
 	],
 	complications: [],

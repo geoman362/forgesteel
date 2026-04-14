@@ -1,15 +1,17 @@
-import { Button, Flex, Popover, Segmented, Space, Upload } from 'antd';
-import { DownloadOutlined, InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Drawer, Flex, Segmented, Space, Upload } from 'antd';
+import { DownloadOutlined, PlusOutlined } from '@ant-design/icons';
 import { Collections } from '@/utils/collections';
 import { Empty } from '@/components/controls/empty/empty';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
+import { Info } from '@/components/controls/info/info';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { Modal } from '@/components/modals/modal/modal';
+import { PanelMode } from '@/enums/panel-mode';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
-import { SourcebookEditorPanel } from '@/components/panels/elements/sourcebook-panel/sourcebook-panel';
+import { SourcebookPanel } from '@/components/panels/elements/sourcebook-panel/sourcebook-panel';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { SourcebookUpdateLogic } from '@/logic/update/sourcebook-update-logic';
 import { Utils } from '@/utils/utils';
@@ -29,6 +31,7 @@ interface Props {
 
 export const SourcebooksModal = (props: Props) => {
 	const [ page, setPage ] = useState<SourcebookType>(SourcebookType.Official);
+	const [ selectedSourcebook, setSelectedSourcebook ] = useState<Sourcebook | null>(null);
 	const [ homebrewSourcebooks, setHomebrewSourcebooks ] = useState<Sourcebook[]>(Utils.copy(props.homebrewSourcebooks));
 	const [ hiddenSourcebookIDs, setHiddenSourcebookIDs ] = useState<string[]>(Utils.copy(props.hiddenSourcebookIDs));
 
@@ -45,6 +48,24 @@ export const SourcebooksModal = (props: Props) => {
 		}
 	};
 
+	const changeSourcebook = (sourcebook: Sourcebook) => {
+		const copy = Utils.copy(homebrewSourcebooks);
+		const index = copy.findIndex(s => s.id === sourcebook.id);
+		if (index !== -1) {
+			copy[index] = sourcebook;
+			setHomebrewSourcebooks(copy);
+			props.onHomebrewSourcebookChange(copy);
+		}
+	};
+
+	const deleteSourcebook = (sourcebook: Sourcebook) => {
+		setSelectedSourcebook(null);
+
+		const copy = Utils.copy(homebrewSourcebooks.filter(s => s.id !== sourcebook.id));
+		setHomebrewSourcebooks(copy);
+		props.onHomebrewSourcebookChange(copy);
+	};
+
 	const getContent = () => {
 		switch (page) {
 			case SourcebookType.Official: {
@@ -57,13 +78,15 @@ export const SourcebooksModal = (props: Props) => {
 						<Space orientation='vertical' style={{ width: '100%' }}>
 							{
 								officialSourcebooks.map(s => (
-									<SelectablePanel key={s.id}>
-										<SourcebookEditorPanel
+									<SelectablePanel key={s.id} onSelect={() => setSelectedSourcebook(s)}>
+										<SourcebookPanel
 											sourcebook={s}
-											sourcebooks={[ ...props.officialSourcebooks, ...homebrewSourcebooks ]}
-											visible={!hiddenSourcebookIDs.includes(s.id)}
 											heroes={props.heroes}
-											onSetVisible={setVisibility}
+											sourcebooks={[ ...props.officialSourcebooks, ...props.homebrewSourcebooks ]}
+											visibility={{
+												visible: !hiddenSourcebookIDs.includes(s.id),
+												onSetVisibility: (value: boolean) => setVisibility(s, value)
+											}}
 										/>
 									</SelectablePanel>
 								))
@@ -84,13 +107,9 @@ export const SourcebooksModal = (props: Props) => {
 						<HeaderText
 							level={1}
 							extra={
-								<Popover
-									content={
-										<Markdown text={'If you\'d like your company\'s content to be featured here, [get in touch](mailto:andy.aiken@live.co.uk).'} />
-									}
-								>
-									<Button type='text' icon={<InfoCircleOutlined />} />
-								</Popover>
+								<Info>
+									<Markdown text={'If you\'d like your company\'s content to be featured here, [get in touch](mailto:andy.aiken@live.co.uk).'} />
+								</Info>
 							}
 						>
 							Third-Party Sourcebooks
@@ -98,13 +117,15 @@ export const SourcebooksModal = (props: Props) => {
 						<Space orientation='vertical' style={{ width: '100%' }}>
 							{
 								Collections.sort(thirdPartySourcebooks, sb => sb.name).map(s => (
-									<SelectablePanel key={s.id}>
-										<SourcebookEditorPanel
+									<SelectablePanel key={s.id} onSelect={() => setSelectedSourcebook(s)}>
+										<SourcebookPanel
 											sourcebook={s}
-											sourcebooks={[ ...props.officialSourcebooks, ...homebrewSourcebooks ]}
-											visible={!hiddenSourcebookIDs.includes(s.id)}
 											heroes={props.heroes}
-											onSetVisible={setVisibility}
+											sourcebooks={[ ...props.officialSourcebooks, ...props.homebrewSourcebooks ]}
+											visibility={{
+												visible: !hiddenSourcebookIDs.includes(s.id),
+												onSetVisibility: (value: boolean) => setVisibility(s, value)
+											}}
 										/>
 									</SelectablePanel>
 								))
@@ -125,13 +146,9 @@ export const SourcebooksModal = (props: Props) => {
 						<HeaderText
 							level={1}
 							extra={
-								<Popover
-									content={
-										<Markdown text={'If you\'d like your creations to be featured here, just fill in [this form](https://forms.cloud.microsoft/r/mmxqfnFzx4).'} />
-									}
-								>
-									<Button type='text' icon={<InfoCircleOutlined />} />
-								</Popover>
+								<Info>
+									<Markdown text={'If you\'d like your creations to be featured here, just fill in [this form](https://forms.cloud.microsoft/r/mmxqfnFzx4).'} />
+								</Info>
 							}
 						>
 							Community Sourcebooks
@@ -139,13 +156,15 @@ export const SourcebooksModal = (props: Props) => {
 						<Space orientation='vertical' style={{ width: '100%' }}>
 							{
 								Collections.sort(communitySourcebooks, sb => sb.name).map(s => (
-									<SelectablePanel key={s.id}>
-										<SourcebookEditorPanel
+									<SelectablePanel key={s.id} onSelect={() => setSelectedSourcebook(s)}>
+										<SourcebookPanel
 											sourcebook={s}
-											sourcebooks={[ ...props.officialSourcebooks, ...homebrewSourcebooks ]}
-											visible={!hiddenSourcebookIDs.includes(s.id)}
 											heroes={props.heroes}
-											onSetVisible={setVisibility}
+											sourcebooks={[ ...props.officialSourcebooks, ...props.homebrewSourcebooks ]}
+											visibility={{
+												visible: !hiddenSourcebookIDs.includes(s.id),
+												onSetVisibility: (value: boolean) => setVisibility(s, value)
+											}}
 										/>
 									</SelectablePanel>
 								))
@@ -164,22 +183,6 @@ export const SourcebooksModal = (props: Props) => {
 					const copy = Utils.copy(homebrewSourcebooks);
 					const sourcebook = FactoryLogic.createSourcebook();
 					copy.push(sourcebook);
-					setHomebrewSourcebooks(copy);
-					props.onHomebrewSourcebookChange(copy);
-				};
-
-				const changeSourcebook = (sourcebook: Sourcebook) => {
-					const copy = Utils.copy(homebrewSourcebooks);
-					const index = copy.findIndex(s => s.id === sourcebook.id);
-					if (index !== -1) {
-						copy[index] = sourcebook;
-						setHomebrewSourcebooks(copy);
-						props.onHomebrewSourcebookChange(copy);
-					}
-				};
-
-				const deleteSourcebook = (sourcebook: Sourcebook) => {
-					const copy = Utils.copy(homebrewSourcebooks.filter(s => s.id !== sourcebook.id));
 					setHomebrewSourcebooks(copy);
 					props.onHomebrewSourcebookChange(copy);
 				};
@@ -224,15 +227,15 @@ export const SourcebooksModal = (props: Props) => {
 						<Space orientation='vertical' style={{ width: '100%' }}>
 							{
 								Collections.sort(homebrewSourcebooks, sb => sb.name).map(s => (
-									<SelectablePanel key={s.id}>
-										<SourcebookEditorPanel
+									<SelectablePanel key={s.id} onSelect={() => setSelectedSourcebook(s)}>
+										<SourcebookPanel
 											sourcebook={s}
-											sourcebooks={[ ...props.officialSourcebooks, ...homebrewSourcebooks ]}
-											visible={!hiddenSourcebookIDs.includes(s.id)}
 											heroes={props.heroes}
-											onSetVisible={setVisibility}
-											onChange={changeSourcebook}
-											onDelete={deleteSourcebook}
+											sourcebooks={[ ...props.officialSourcebooks, ...props.homebrewSourcebooks ]}
+											visibility={{
+												visible: !hiddenSourcebookIDs.includes(s.id),
+												onSetVisibility: (value: boolean) => setVisibility(s, value)
+											}}
 										/>
 									</SelectablePanel>
 								))
@@ -268,6 +271,25 @@ export const SourcebooksModal = (props: Props) => {
 			content={
 				<div className='sourcebooks-modal'>
 					{getContent()}
+					<Drawer open={!!selectedSourcebook} onClose={() => setSelectedSourcebook(null)} closeIcon={null} size={500}>
+						<Modal
+							content={
+								selectedSourcebook ?
+									<div style={{ padding: '0 20px 20px 20px' }}>
+										<SourcebookPanel
+											sourcebook={selectedSourcebook}
+											heroes={props.heroes}
+											sourcebooks={[ ...props.officialSourcebooks, ...props.homebrewSourcebooks ]}
+											mode={PanelMode.Full}
+											onChange={changeSourcebook}
+											onDelete={deleteSourcebook}
+										/>
+									</div>
+									: null
+							}
+							onClose={() => setSelectedSourcebook(null)}
+						/>
+					</Drawer>
 				</div>
 			}
 			onClose={props.onClose}

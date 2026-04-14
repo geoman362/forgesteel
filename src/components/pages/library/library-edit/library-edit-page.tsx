@@ -1,12 +1,12 @@
+import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
 import { CloseOutlined, SaveOutlined } from '@ant-design/icons';
 import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { Adventure } from '@/models/adventure';
 import { AdventureEditPanel } from '@/components/panels/edit/adventure-edit/adventure-edit-panel';
 import { Ancestry } from '@/models/ancestry';
 import { AncestryEditPanel } from '@/components/panels/edit/ancestry-edit/ancestry-edit-panel';
-import { AppFooter } from '@/components/panels/app-footer/app-footer';
 import { AppHeader } from '@/components/panels/app-header/app-header';
-import { Button } from 'antd';
+import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { Career } from '@/models/career';
 import { CareerEditPanel } from '@/components/panels/edit/career-edit/career-edit-panel';
 import { ClassEditPanel } from '@/components/panels/edit/class-edit/class-edit-panel';
@@ -52,6 +52,7 @@ import { TerrainEditPanel } from '@/components/panels/edit/terrain-edit/terrain-
 import { Title } from '@/models/title';
 import { TitleEditPanel } from '@/components/panels/edit/title-edit/title-edit-panel';
 import { Utils } from '@/utils/utils';
+import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useParams } from 'react-router';
 import { useState } from 'react';
@@ -63,17 +64,14 @@ interface Props {
 	heroes: Hero[];
 	sourcebooks: Sourcebook[];
 	options: Options;
-	highlightAbout: boolean;
-	showReference: () => void;
-	showRoll: () => void;
-	showAbout: () => void;
-	showSettings: () => void;
+	params: FooterParams;
 	showMonster: (monster: Monster, monsterGroup: MonsterGroup) => void;
 	showTerrain: (terrain: Terrain, upgradeIDs: string[]) => void;
 	saveChanges: (kind: SourcebookElementKind, sourcebookID: string, element: Element) => void;
 }
 
 export const LibraryEditPage = (props: Props) => {
+	const isSmall = useIsSmall();
 	const navigation = useNavigation();
 	const { kind, sourcebookID, elementID } = useParams<{ kind: SourcebookElementKind, sourcebookID: string, elementID: string }>();
 	const [ element, setElement ] = useState<Element>(() => {
@@ -144,7 +142,6 @@ export const LibraryEditPage = (props: Props) => {
 		return Utils.copy(original) as Element;
 	});
 	const [ dirty, setDirty ] = useState<boolean>(false);
-	const [ revision, setRevision ] = useState<number>(0);
 
 	const getSubheader = () => {
 		return `${Format.capitalize(kind!.split('-').join(' '))} Builder`;
@@ -156,7 +153,6 @@ export const LibraryEditPage = (props: Props) => {
 		const copy = Utils.copy(element);
 		setElement(copy);
 		setDirty(true);
-		setRevision(revision + 1);
 	};
 
 	const getEditSection = () => {
@@ -165,6 +161,7 @@ export const LibraryEditPage = (props: Props) => {
 				return (
 					<div className='adventure-container'>
 						<AdventureEditPanel
+							key={element.id}
 							adventure={element as Adventure}
 							sourcebooks={props.sourcebooks}
 							heroes={props.heroes}
@@ -242,6 +239,7 @@ export const LibraryEditPage = (props: Props) => {
 			case 'encounter':
 				return (
 					<EncounterEditPanel
+						key={element.id}
 						encounter={element as Encounter}
 						heroes={props.heroes}
 						sourcebooks={props.sourcebooks}
@@ -293,11 +291,13 @@ export const LibraryEditPage = (props: Props) => {
 						options={props.options}
 						mode={PanelMode.Full}
 						onChange={applyChanges}
+						onSelectMonster={props.showMonster}
 					/>
 				);
 			case 'montage':
 				return (
 					<MontageEditPanel
+						key={element.id}
 						montage={element as Montage}
 						heroes={props.heroes}
 						sourcebooks={props.sourcebooks}
@@ -309,6 +309,7 @@ export const LibraryEditPage = (props: Props) => {
 			case 'negotiation':
 				return (
 					<NegotiationEditPanel
+						key={element.id}
 						negotiation={element as Negotiation}
 						sourcebooks={props.sourcebooks}
 						options={props.options}
@@ -353,6 +354,7 @@ export const LibraryEditPage = (props: Props) => {
 				return (
 					<div className='tactical-map-container'>
 						<TacticalMapPanel
+							key={element.id}
 							map={element as TacticalMap}
 							display={TacticalMapDisplayType.DirectorEdit}
 							sourcebooks={props.sourcebooks}
@@ -393,23 +395,20 @@ export const LibraryEditPage = (props: Props) => {
 		<ErrorBoundary>
 			<div className='library-edit-page'>
 				<AppHeader subheader={getSubheader()}>
-					<Button type='primary' icon={<SaveOutlined />} disabled={!dirty} onClick={() => props.saveChanges(kind!, sourcebookID!, element)}>
-						Save Changes
-					</Button>
-					<Button icon={<CloseOutlined />} onClick={() => navigation.goToLibrary(kind!, elementID!)}>
-						Cancel
-					</Button>
+					<ButtonGroup
+						buttons={[
+							{ type: 'button', label: isSmall ? undefined : 'Save Changes', icon: <SaveOutlined />, primary: true, disabled: !dirty, onClick: () => props.saveChanges(kind!, sourcebookID!, element) },
+							{ type: 'button', label: isSmall ? undefined : 'Cancel', icon: <CloseOutlined />, onClick: () => navigation.goToLibrary(kind!, elementID!) }
+						]}
+					/>
 				</AppHeader>
 				<div className='library-edit-page-content'>
 					{getEditSection()}
 				</div>
 				<AppFooter
 					page='library'
-					highlightAbout={props.highlightAbout}
-					showReference={props.showReference}
-					showRoll={props.showRoll}
-					showAbout={props.showAbout}
-					showSettings={props.showSettings}
+					options={props.options}
+					params={props.params}
 				/>
 			</div>
 		</ErrorBoundary>

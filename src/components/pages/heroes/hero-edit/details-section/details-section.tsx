@@ -1,7 +1,7 @@
 import { Alert, AutoComplete, Button, Divider, Flex, Space, Upload } from 'antd';
-import { DownloadOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Collections } from '@/utils/collections';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
+import { DownloadOutlined } from '@ant-design/icons';
 import { Expander } from '@/components/controls/expander/expander';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
@@ -10,10 +10,11 @@ import { FeatureType } from '@/enums/feature-type';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
-import { NameGenerator } from '@/utils/name-generator';
+import { NameSuggestions } from '@/components/panels/name-suggestions/name-suggestions';
 import { Options } from '@/models/options';
 import { Sourcebook } from '@/models/sourcebook';
 import { TextInput } from '@/components/controls/text-input/text-input';
+import { Utils } from '@/utils/utils';
 
 import './details-section.scss';
 
@@ -46,7 +47,7 @@ export const DetailsSection = (props: DetailsSectionProps) => {
 						value={props.hero.name}
 						onChange={props.setName}
 					/>
-					<Button icon={<ThunderboltOutlined />} onClick={() => props.setName(NameGenerator.generateName())} />
+					<NameSuggestions onSelect={props.setName} />
 				</Space.Compact>
 				<HeaderText>Portrait</HeaderText>
 				{
@@ -60,12 +61,13 @@ export const DetailsSection = (props: DetailsSectionProps) => {
 							style={{ width: '100%' }}
 							accept='.png,.webp,.gif,.jpg,.jpeg,.svg'
 							showUploadList={false}
-							beforeUpload={file => {
+							beforeUpload={async file => {
 								const reader = new FileReader();
-								reader.onload = progress => {
+								reader.onload = async progress => {
 									if (progress.target) {
 										const content = progress.target.result as string;
-										props.setPicture(content);
+										const resized = await Utils.getResizedImage(content);
+										props.setPicture(resized);
 									}
 								};
 								reader.readAsDataURL(file);

@@ -1,5 +1,6 @@
-import { Button, Segmented, Space } from 'antd';
 import { MonsterInfo, TerrainInfo } from '@/components/panels/token/token';
+import { Segmented, Space } from 'antd';
+import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { CreatureLogic } from '@/logic/creature-logic';
 import { Empty } from '@/components/controls/empty/empty';
 import { Encounter } from '@/models/encounter';
@@ -13,7 +14,6 @@ import { FeatureType } from '@/enums/feature-type';
 import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
-import { InfoCircleOutlined } from '@ant-design/icons';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
@@ -36,7 +36,7 @@ interface Props {
 	heroes: Hero[];
 	options: Options;
 	mode?: PanelMode;
-	showTools?: () => void;
+	showTools?: (tool: string) => void;
 }
 
 export const EncounterPanel = (props: Props) => {
@@ -203,17 +203,39 @@ export const EncounterPanel = (props: Props) => {
 								<HeaderText level={1}>{group.name} Malice</HeaderText>
 								<div className='encounter-malice'>
 									{
-										group.malice.filter(m => m.data.echelon <= maxEchelon).map(m => (
-											<SelectablePanel key={m.id}>
-												<FeaturePanel
-													feature={m}
-													options={props.options}
-													mode={PanelMode.Full}
-													cost={m.type === FeatureType.MaliceAbility ? m.data.ability.cost : m.data.cost}
-													repeatable={m.type === FeatureType.Malice ? m.data.repeatable : undefined}
-												/>
-											</SelectablePanel>
-										))
+										group.malice
+											.filter(m => {
+												let echelon = 1;
+												switch (m.type) {
+													case FeatureType.Malice:
+													case FeatureType.MaliceAbility:
+														echelon = m.data.echelon;
+														break;
+												}
+												return echelon <= maxEchelon;
+											})
+											.map(m => {
+												let cost = undefined;
+												switch (m.type) {
+													case FeatureType.Malice:
+														cost = m.data.cost;
+														break;
+													case FeatureType.MaliceAbility:
+														cost = m.data.ability.cost;
+														break;
+												}
+												return (
+													<SelectablePanel key={m.id}>
+														<FeaturePanel
+															feature={m}
+															options={props.options}
+															mode={PanelMode.Full}
+															cost={cost}
+															repeatable={m.type === FeatureType.Malice ? m.data.repeatable : undefined}
+														/>
+													</SelectablePanel>
+												);
+											})
 									}
 								</div>
 							</div>
@@ -294,7 +316,11 @@ export const EncounterPanel = (props: Props) => {
 					tags={tags}
 					extra={
 						props.showTools ?
-							<Button type='text' icon={<InfoCircleOutlined />} onClick={props.showTools} />
+							<ButtonGroup
+								buttons={[
+									{ type: 'button', label: 'Minis', onClick: () => props.showTools!('minis') }
+								]}
+							/>
 							: null
 					}
 				>

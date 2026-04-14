@@ -1,4 +1,4 @@
-import { Feature, FeatureAbility, FeatureClassAbility, FeatureLanguageChoice } from '@/models/feature';
+import { Feature, FeatureAbility, FeatureClassAbility, FeatureLanguageChoice, FeatureSwitchOptions, FeatureSwitchValue } from '@/models/feature';
 import { Ability } from '@/models/ability';
 import { AbilityData } from '@/data/ability-data';
 import { AbilityDistanceType } from '@/enums/ability-distance-type';
@@ -42,8 +42,8 @@ export class HeroLogic {
 		return `Level ${hero.class.level} ${hero.ancestry.name} ${hero.class.name}`;
 	};
 
-	static getFeatures = (hero: Hero) => {
-		const features: { feature: Feature, source: string }[] = [];
+	static getFeatures = (hero: Hero, includeCustomizations = true) => {
+		let features: { feature: Feature, source: string, level: number | undefined }[] = [];
 
 		if (hero.ancestry) {
 			features.push(...FeatureLogic.getFeaturesFromAncestry(hero.ancestry, hero));
@@ -67,6 +67,14 @@ export class HeroLogic {
 
 		features.push(...FeatureLogic.getFeaturesFromCustomization(hero));
 
+		hero.state.titles.forEach(title => {
+			try {
+				features.push(...FeatureLogic.getFeaturesFromTitle(title, hero));
+			} catch (ex) {
+				console.error(ex);
+			}
+		});
+
 		hero.state.inventory.forEach(item => {
 			try {
 				features.push(...FeatureLogic.getFeaturesFromItem(item, hero));
@@ -75,9 +83,43 @@ export class HeroLogic {
 			}
 		});
 
-		return Collections.sort(features, f => f.feature.name).map(f => {
-			const customization = hero.abilityCustomizations.find(ac => ac.abilityID === f.feature.id) || null;
-			if (customization) {
+		// Handle switches
+		while (features.some(f => f.feature.type === FeatureType.SwitchOptions)) {
+			const switchValues = features.filter(f => f.feature.type === FeatureType.SwitchValue).map(f => f.feature) as FeatureSwitchValue[];
+			const valueMap = switchValues.reduce((map, sv) => {
+				map[sv.data.switch] = sv.data.value;
+				return map;
+			}, {} as { [key: string]: string });
+
+			features.filter(f => f.feature.type === FeatureType.SwitchOptions).forEach(f => {
+				const optionsFeature = f.feature as FeatureSwitchOptions;
+				const value = valueMap[optionsFeature.data.switch];
+				if (value) {
+					const option = optionsFeature.data.options.find(o => o.value === value);
+					if (option) {
+						const simplified = FeatureLogic.simplifyFeatures([ { feature: option.feature, source: f.source, level: f.level } ], hero);
+						features.push(...simplified);
+					}
+				} else if (optionsFeature.data.defaultOption) {
+					const simplified = FeatureLogic.simplifyFeatures([ { feature: optionsFeature.data.defaultOption, source: f.source, level: f.level } ], hero);
+					features.push(...simplified);
+				}
+			});
+			features = features.filter(f => f.feature.type !== FeatureType.SwitchOptions);
+		}
+
+		return Collections
+			.sort(features, f => f.feature.name)
+			.map(f => {
+				if (!includeCustomizations) {
+					return f;
+				}
+
+				const customization = hero.abilityCustomizations.find(ac => ac.abilityID === f.feature.id) || null;
+				if (!customization) {
+					return f;
+				}
+
 				const feature = Utils.copy(f.feature);
 
 				feature.name = customization.name || feature.name;
@@ -87,20 +129,17 @@ export class HeroLogic {
 					feature.description += `\n\n${customization.notes}`;
 				}
 
-				return { feature: feature, source: f.source };
-			}
-
-			return f;
-		});
+				return { feature: feature, source: f.source, level: f.level };
+			});
 	};
 
 	static getAbilities = (hero: Hero, sourcebooks: Sourcebook[], standardAbilityIDs: string[]) => {
-		const choices: { ability: Ability, source: string }[] = [];
+		const choices: { ability: Ability, source: string, level: number | undefined }[] = [];
 
 		HeroLogic.getFeatures(hero)
 			.filter(f => f.feature.type === FeatureType.Ability)
 			.forEach(f => {
-				choices.push({ ability: (f.feature as FeatureAbility).data.ability, source: f.source });
+				choices.push({ ability: (f.feature as FeatureAbility).data.ability, source: f.source, level: f.level });
 			});
 
 		HeroLogic.getFeatures(hero)
@@ -117,7 +156,7 @@ export class HeroLogic {
 					feature.data.selectedIDs.forEach(abilityID => {
 						const ability = abilities.find(a => a.id === abilityID);
 						if (ability) {
-							choices.push({ ability: ability, source: f.source });
+							choices.push({ ability: ability, source: f.source, level: f.level });
 						}
 					});
 				}
@@ -141,7 +180,7 @@ export class HeroLogic {
 
 		AbilityData.standardAbilities
 			.filter(a => standardAbilityIDs.includes(a.id))
-			.forEach(a => abilities.push({ ability: a, source: 'Standard' }));
+			.forEach(a => abilities.push({ ability: a, source: 'Standard', level: undefined }));
 
 		return abilities.map(a => {
 			const customization = hero.abilityCustomizations.find(ac => ac.abilityID === a.ability.id) || null;
@@ -165,7 +204,7 @@ export class HeroLogic {
 					ability.sections.push(FactoryLogic.createAbilitySectionField({ name: 'Notes', effect: customization.notes }));
 				}
 
-				return { ability: ability, source: a.source };
+				return { ability: ability, source: a.source, level: a.level };
 			}
 
 			return a;
@@ -194,6 +233,24 @@ export class HeroLogic {
 				.filter(f => f.type === FeatureType.TitleChoice)
 				.flatMap(f => f.data.selected)
 		];
+	};
+
+	static getClassSpecialization = (hero: Hero): string[] => {
+		if (!hero.class) {
+			return [];
+		}
+
+		const selected = hero.class.subclasses.filter(sc => sc.selected).map(sc => sc.name);
+		if (selected.length > 0) {
+			return selected;
+		}
+
+		const domains = HeroLogic.getDomains(hero).map(d => d.name);
+		if (domains.length > 0) {
+			return [ domains.join('/') ];
+		}
+
+		return [];
 	};
 
 	static getDomains = (hero: Hero) => {
@@ -292,6 +349,14 @@ export class HeroLogic {
 				}
 				return result;
 			});
+	};
+
+	static getFixtures = (hero: Hero) => {
+		return HeroLogic.getFeatures(hero)
+			.map(f => f.feature)
+			.filter(f => f.type === FeatureType.Fixture)
+			.map(f => f.data.fixture)
+			.sort((a, b) => a.name.localeCompare(b.name));
 	};
 
 	static getCharacteristic = (hero: Hero, characteristic: Characteristic) => {
@@ -661,6 +726,32 @@ export class HeroLogic {
 		return value;
 	};
 
+	static getForcedMovementBonus = (hero: Hero, type: 'push' | 'pull' | 'slide') => {
+		let value = 0;
+
+		let field = FeatureField.ForcedMovementPush;
+		switch (type) {
+			case 'push':
+				field = FeatureField.ForcedMovementPush;
+				break;
+			case 'pull':
+				field = FeatureField.ForcedMovementPull;
+				break;
+			case 'slide':
+				field = FeatureField.ForcedMovementSlide;
+				break;
+		}
+
+		HeroLogic.getFeatures(hero)
+			.map(f => f.feature)
+			.filter(f => f.type === FeatureType.Bonus)
+			.map(f => f.data)
+			.filter(data => data.field === field)
+			.forEach(data => value += ModifierLogic.calculateModifierValue(data, hero));
+
+		return value;
+	};
+
 	///////////////////////////////////////////////////////////////////////////
 
 	static getKitDamageBonuses = (hero: Hero) => {
@@ -910,7 +1001,7 @@ export class HeroLogic {
 
 		return Collections.distinct(Collections.getPermutations(array), item => item.join(', ')).map(arr => {
 			return all.map(ch => {
-				let value = 0;
+				let value;
 				if (primary.includes(ch)) {
 					value = 2;
 				} else {

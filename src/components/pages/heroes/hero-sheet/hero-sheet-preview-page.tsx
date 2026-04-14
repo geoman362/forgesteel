@@ -13,7 +13,7 @@ import { HeroLogic } from '@/logic/hero-logic';
 import { HeroSheetBuilder } from '@/logic/hero-sheet/hero-sheet-builder';
 import { HeroSheetPage } from '@/components/pages/heroes/hero-sheet/hero-sheet-page';
 import { Options } from '@/models/options';
-import { SettingFilled } from '@ant-design/icons';
+import { SettingOutlined } from '@ant-design/icons';
 import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { SheetPageSize } from '@/enums/sheet-page-size';
 import { Sourcebook } from '@/models/sourcebook';
@@ -290,7 +290,6 @@ export const HeroSheetPreviewPage = (props: Props) => {
 			card.addEventListener('mouseleave', cardLeave);
 			card.addEventListener('click', cardClick);
 		});
-	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return (
@@ -309,7 +308,7 @@ export const HeroSheetPreviewPage = (props: Props) => {
 				{getPreviewPage()}
 				<div id='pdf-canvas'></div>
 				<FloatButton
-					icon={<SettingFilled />}
+					icon={<SettingOutlined />}
 					onClick={showDrawer}
 					tooltip={<div>Sheet Display Options</div>}
 				/>

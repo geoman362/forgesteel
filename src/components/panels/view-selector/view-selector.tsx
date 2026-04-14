@@ -23,7 +23,7 @@ export const ViewSelector = (props: Props) => {
 
 	const getOptions = () => {
 		const options = [
-			createOption('modern', 'Interactive View (for on screen use)', <DesktopOutlined />)
+			createOption('modern', 'Interactive View (for on-screen use)', <DesktopOutlined />)
 		];
 
 		switch (props.mode) {
@@ -46,6 +46,7 @@ export const ViewSelector = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<Segmented
+				block={true}
 				options={getOptions()}
 				value={props.value}
 				onChange={props.onChange}

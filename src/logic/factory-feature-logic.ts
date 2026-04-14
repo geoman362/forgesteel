@@ -1,4 +1,4 @@
-import { Feature, FeatureAbility, FeatureAbilityCost, FeatureAbilityDamage, FeatureAbilityData, FeatureAbilityDistance, FeatureAddOn, FeatureAncestryChoice, FeatureAncestryFeatureChoice, FeatureBonus, FeatureCharacteristicBonus, FeatureChoice, FeatureClassAbility, FeatureCompanion, FeatureConditionImmunity, FeatureDamageModifier, FeatureDomain, FeatureDomainFeature, FeatureFixture, FeatureFollower, FeatureHeroicResource, FeatureHeroicResourceGain, FeatureItemChoice, FeatureKit, FeatureLanguage, FeatureLanguageChoice, FeatureMalice, FeatureMaliceAbility, FeatureMovementMode, FeatureMultiple, FeaturePackage, FeaturePackageContent, FeaturePerk, FeatureProficiency, FeatureRetainer, FeatureSaveThreshold, FeatureSize, FeatureSkillChoice, FeatureSpeed, FeatureSummon, FeatureSummonChoice, FeatureTaggedFeature, FeatureTaggedFeatureChoice, FeatureText, FeatureTitleChoice } from '@/models/feature';
+import { Feature, FeatureAbility, FeatureAbilityCost, FeatureAbilityDamage, FeatureAbilityData, FeatureAbilityDistance, FeatureAddOn, FeatureAncestryChoice, FeatureAncestryFeatureChoice, FeatureBonus, FeatureCharacteristicBonus, FeatureChoice, FeatureClassAbility, FeatureCompanion, FeatureConditionImmunity, FeatureDamageModifier, FeatureDomain, FeatureDomainFeature, FeatureFixture, FeatureFollower, FeatureHeroicResource, FeatureHeroicResourceGain, FeatureItemChoice, FeatureKit, FeatureLanguage, FeatureLanguageChoice, FeatureMalice, FeatureMaliceAbility, FeatureMovementMode, FeatureMultiple, FeaturePackage, FeaturePackageContent, FeaturePerk, FeatureProficiency, FeatureRetainer, FeatureSaveThreshold, FeatureSize, FeatureSkillChoice, FeatureSpeed, FeatureSummon, FeatureSummonChoice, FeatureSwitchOptions, FeatureSwitchValue, FeatureTaggedFeature, FeatureTaggedFeatureChoice, FeatureText, FeatureTitleChoice } from '@/models/feature';
 import { Ability } from '@/models/ability';
 import { AbilityKeyword } from '@/enums/ability-keyword';
 import { Characteristic } from '@/enums/characteristic';
@@ -11,10 +11,10 @@ import { FeatureType } from '@/enums/feature-type';
 import { Fixture } from '@/models/fixture';
 import { Follower } from '@/models/follower';
 import { Format } from '@/utils/format';
-import { FormatLogic } from '@/logic/format-logic';
 import { ItemType } from '@/enums/item-type';
 import { KitArmor } from '@/enums/kit-armor';
 import { KitWeapon } from '@/enums/kit-weapon';
+import { Monster } from '@/models/monster';
 import { Perk } from '@/models/perk';
 import { PerkList } from '@/enums/perk-list';
 import { PowerRoll } from '@/models/power-roll';
@@ -169,7 +169,7 @@ export class FactoryFeatureLogic {
 		};
 	};
 
-	createChoice = (data: { id: string, name?: string, description?: string, options: { feature: Feature, value: number }[], count?: number | 'ancestry' }): FeatureChoice => {
+	createChoice = (data: { id: string, name?: string, description?: string, options: { feature: Feature, value: number }[], respiteChange?: boolean, count?: number | 'ancestry' }): FeatureChoice => {
 		return {
 			id: data.id,
 			name: data.name || 'Choice',
@@ -177,6 +177,7 @@ export class FactoryFeatureLogic {
 			type: FeatureType.Choice,
 			data: {
 				options: data.options,
+				respiteChange: data.respiteChange || false,
 				count: data.count || 1,
 				selected: []
 			}
@@ -235,7 +236,7 @@ export class FactoryFeatureLogic {
 		return {
 			id: data.id,
 			name: data.name || 'Damage Modifier',
-			description: data.description || data.modifiers.map(FormatLogic.getDamageModifier).join(', '),
+			description: data.description || '',
 			type: FeatureType.DamageModifier,
 			data: {
 				modifiers: data.modifiers
@@ -412,11 +413,11 @@ export class FactoryFeatureLogic {
 		};
 	};
 
-	createMovementMode = (data: { id: string, name?: string, mode: string }): FeatureMovementMode => {
+	createMovementMode = (data: { id: string, name?: string, description?: string, mode: string }): FeatureMovementMode => {
 		return {
 			id: data.id,
 			name: data.name || 'Movement Mode',
-			description: '',
+			description: data.description || '',
 			type: FeatureType.MovementMode,
 			data: {
 				mode: data.mode
@@ -492,14 +493,14 @@ export class FactoryFeatureLogic {
 		};
 	};
 
-	createRetainer = (data: { id: string, name?: string, description?: string }): FeatureRetainer => {
+	createRetainer = (data: { id: string, name?: string, description?: string, retainer?: Monster }): FeatureRetainer => {
 		return {
 			id: data.id,
 			name: data.name || 'Retainer',
 			description: data.description || '',
 			type: FeatureType.Retainer,
 			data: {
-				selected: null
+				selected: data.retainer || null
 			}
 		};
 	};
@@ -608,6 +609,33 @@ export class FactoryFeatureLogic {
 				options: data.options,
 				count: data.count || 1,
 				selected: []
+			}
+		};
+	};
+
+	createSwitchOptions = (data: { id: string, name?: string, description?: string, switch: string, options: { value: string, feature: Feature }[], defaultOption?: Feature }): FeatureSwitchOptions => {
+		return {
+			id: data.id,
+			name: data.name || 'Switch Options',
+			description: data.description || '',
+			type: FeatureType.SwitchOptions,
+			data: {
+				switch: data.switch,
+				options: data.options,
+				defaultOption: data.defaultOption || null
+			}
+		};
+	};
+
+	createSwitchValue = (data: { id: string, name?: string, description?: string, switch: string, value: string }): FeatureSwitchValue => {
+		return {
+			id: data.id,
+			name: data.name || data.switch || 'Switch Value',
+			description: data.description || '',
+			type: FeatureType.SwitchValue,
+			data: {
+				switch: data.switch,
+				value: data.value
 			}
 		};
 	};

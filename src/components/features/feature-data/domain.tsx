@@ -39,13 +39,9 @@ export const InfoDomain = (props: InfoProps) => {
 		);
 	}
 
-	if (!props.feature.description) {
-		return (
-			<div className='ds-text'>Choose {props.data.count > 1 ? props.data.count : 'a'} {props.data.count > 1 ? 'domains' : 'domain'}.</div>
-		);
-	}
-
-	return null;
+	return (
+		<div className='ds-text'>Choose {props.data.count > 1 ? props.data.count : 'a'} {props.data.count > 1 ? 'domains' : 'domain'}.</div>
+	);
 };
 
 interface EditProps {
@@ -139,7 +135,7 @@ export const ConfigDomain = (props: ConfigProps) => {
 				optionRender={option => <Field label={option.data.label} value={option.data.desc} />}
 				value={props.data.count === 1 ? (props.data.selected.length > 0 ? props.data.selected[0].id : null) : props.data.selected.map(k => k.id)}
 				onChange={value => {
-					let ids: string[] = [];
+					let ids: string[];
 					if (props.data.count === 1) {
 						ids = value !== undefined ? [ value as string ] : [];
 					} else {

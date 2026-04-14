@@ -14,12 +14,20 @@ export class Utils {
 
 	static guid = () => {
 		const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
-		let id = '';
-		while (id.length < 16) {
-			const n = Random.randomNumber(letters.length);
-			id += letters[n];
+		const sectionCount = 6;
+		const tokenLength = 5;
+
+		const sections = [];
+		while (sections.length < sectionCount) {
+			let id = '';
+			while (id.length < tokenLength) {
+				const n = Random.randomNumber(letters.length);
+				id += letters[n];
+			}
+			sections.push(id);
 		}
-		return id;
+
+		return sections.join('-');
 	};
 
 	// From: https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
@@ -45,7 +53,7 @@ export class Utils {
 		return JSON.parse(JSON.stringify(object)) as T;
 	};
 
-	static wait = (ms: number = 1000) => {
+	static wait = (ms: number) => {
 		return new Promise<void>(resolve => setTimeout(resolve, ms));
 	};
 
@@ -70,6 +78,31 @@ export class Utils {
 			const gamma = ((light.a.y - light.b.y) * (wall.b.x - light.a.x) + (light.b.x - light.a.x) * (wall.b.y - light.a.y)) / det;
 			return (0 <= lambda && lambda <= 1) && (0 <= gamma && gamma <= 1);
 		}
+	};
+
+	static getResizedImage = (data: string): Promise<string> => {
+		return new Promise(resolve => {
+			const img = new Image();
+			img.onload = () => {
+				const maxSize = 500;
+				const canvas = document.createElement('canvas');
+				canvas.width = maxSize;
+				canvas.height = maxSize;
+				const ctx = canvas.getContext('2d');
+				if (ctx) {
+					const scale = Math.min(maxSize / img.width, maxSize / img.height);
+					const scaledWidth = img.width * scale;
+					const scaledHeight = img.height * scale;
+					const offsetX = (maxSize - scaledWidth) / 2;
+					const offsetY = (maxSize - scaledHeight) / 2;
+					ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+					resolve(canvas.toDataURL('image/png'));
+				} else {
+					resolve(data);
+				}
+			};
+			img.src = data;
+		});
 	};
 
 	static exportData = (name: string, obj: unknown, ext: string) => {

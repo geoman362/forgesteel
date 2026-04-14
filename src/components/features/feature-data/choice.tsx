@@ -56,13 +56,15 @@ export const InfoChoice = (props: InfoProps) => {
 						`Choose ${props.data.count} of the following options:`
 				}
 			</div>
-			{
-				props.data.options.map(o => (
-					<div key={o.feature.id} className='container'>
-						<FeaturePanel feature={o.feature} options={props.options} cost={showCosts ? o.value : undefined} mode={PanelMode.Full} />
-					</div>
-				))
-			}
+			<Space orientation='vertical' style={{ width: '100%' }}>
+				{
+					props.data.options.map(o => (
+						<Expander key={o.feature.id} title={o.feature.name}>
+							<FeaturePanel feature={o.feature} options={props.options} cost={showCosts ? o.value : undefined} mode={PanelMode.Full} />
+						</Expander>
+					))
+				}
+			</Space>
 		</div>
 	);
 };
@@ -126,6 +128,13 @@ export const EditChoice = (props: EditProps) => {
 		props.setData(copy);
 	};
 
+	const setRespiteChange = (value: boolean) => {
+		const copy = Utils.copy(data) as FeatureChoiceData;
+		copy.respiteChange = value;
+		setData(copy);
+		props.setData(copy);
+	};
+
 	return (
 		<Space orientation='vertical' style={{ width: '100%' }}>
 			<HeaderText
@@ -166,6 +175,8 @@ export const EditChoice = (props: EditProps) => {
 			<HeaderText>Count</HeaderText>
 			<Toggle label='Use ancestry points' value={data.count === 'ancestry'} onChange={value => setChoiceCount(value ? 'ancestry' : 3)} />
 			{data.count !== 'ancestry' ? <NumberSpin min={1} value={data.count} onChange={setChoiceCount} /> : null}
+			<HeaderText>Respite Change</HeaderText>
+			<Toggle label='Can change during a respite' value={data.respiteChange} onChange={setRespiteChange} />
 		</Space>
 	);
 };
@@ -195,20 +206,21 @@ export const ConfigChoice = (props: ConfigProps) => {
 	}
 	if (allOptions.some(opt => opt.feature.type === FeatureType.AncestryFeatureChoice)) {
 		allOptions = allOptions.filter(opt => opt.feature.type !== FeatureType.AncestryFeatureChoice);
-		const additionalOptions = HeroLogic.getFormerAncestries(props.hero!)
+		const additionalOptions = HeroLogic.getFormerAncestries(props.hero)
 			.flatMap(a => a.features)
 			.filter(f => f.type === FeatureType.Choice)
 			.flatMap(f => f.data.options)
 			.filter(opt => opt.feature.type !== FeatureType.AncestryFeatureChoice);
 		allOptions.push(...additionalOptions);
 	}
+	allOptions = Collections.distinct(allOptions, opt => opt.feature.id);
 
 	const selectedIDs = props.data.selected.map(f => f.id);
 	const pointsUsed = Collections.sum(selectedIDs, id => {
 		const original = allOptions.find(o => o.feature.id === id);
 		return original ? original.value : 0;
 	});
-	const pointsMax = props.data.count === 'ancestry' ? HeroLogic.getAncestryPoints(props.hero!) : props.data.count;
+	const pointsMax = props.data.count === 'ancestry' ? HeroLogic.getAncestryPoints(props.hero) : props.data.count;
 	const pointsLeft = pointsMax - pointsUsed;
 
 	let unavailableIDs: string[] = [];
@@ -280,7 +292,7 @@ export const ConfigChoice = (props: ConfigProps) => {
 				(pointsLeft > 0) && (props.data.count === 'ancestry') ?
 					<>
 						<Divider />
-						<Toggle label='Choose a feature from a different ancestry' value={comprehensive} onChange={setComprehensive} />
+						<Toggle label='Choose a feature from any ancestry' value={comprehensive} onChange={setComprehensive} />
 					</>
 					: null
 			}
@@ -297,6 +309,7 @@ export const ConfigChoice = (props: ConfigProps) => {
 				<FeatureSelectModal
 					features={sortedOptions}
 					hero={props.hero}
+					sourcebooks={props.sourcebooks}
 					options={props.options}
 					onSelect={feature => {
 						setChoiceSelectorOpen(false);

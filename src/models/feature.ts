@@ -89,6 +89,7 @@ export type FeatureCharacteristicBonus = FeatureOf<FeatureType.CharacteristicBon
 
 export interface FeatureChoiceData extends _FeatureData {
 	options: { feature: Feature, value: number }[];
+	respiteChange: boolean;
 	count: number | 'ancestry';
 	selected: Feature[];
 }
@@ -282,6 +283,19 @@ export interface FeatureSummonChoiceData extends _FeatureData {
 };
 export type FeatureSummonChoice = FeatureOf<FeatureType.SummonChoice, FeatureSummonChoiceData>;
 
+export interface FeatureSwitchOptionsData extends _FeatureData {
+	switch: string;
+	options: { value: string, feature: Feature }[];
+	defaultOption: Feature | null;
+};
+export type FeatureSwitchOptions = FeatureOf<FeatureType.SwitchOptions, FeatureSwitchOptionsData>;
+
+export interface FeatureSwitchValueData extends _FeatureData {
+	switch: string;
+	value: string
+};
+export type FeatureSwitchValue = FeatureOf<FeatureType.SwitchValue, FeatureSwitchValueData>;
+
 export interface FeatureTaggedFeatureData extends _FeatureData {
 	tag: string;
 	feature: Feature;
@@ -344,6 +358,8 @@ export type Feature =
 	| FeatureSpeed
 	| FeatureSummon
 	| FeatureSummonChoice
+	| FeatureSwitchOptions
+	| FeatureSwitchValue
 	| FeatureText
 	| FeatureTaggedFeature
 	| FeatureTaggedFeatureChoice

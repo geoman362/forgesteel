@@ -1,11 +1,13 @@
 import { Alert, Button, Flex, Segmented } from 'antd';
-import { BookOutlined, CloseOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons';
-import { AppFooter } from '@/components/panels/app-footer/app-footer';
+import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
+import { BookOutlined, BulbFilled, BulbOutlined, DoubleLeftOutlined, DoubleRightOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons';
 import { AppHeader } from '@/components/panels/app-header/app-header';
+import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { Collections } from '@/utils/collections';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Markdown } from '@/components/controls/markdown/markdown';
+import { Options } from '@/models/options';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Tip } from '@/models/tip';
 import { TipData } from '@/data/tip-data';
@@ -21,17 +23,19 @@ import './welcome-page.scss';
 type WelcomeType = 'player' | 'director-prep' | 'director-run' | 'creator';
 
 interface Props {
-	highlightAbout: boolean;
-	showReference: () => void;
-	showRoll: () => void;
-	showAbout: () => void;
-	showSettings: () => void;
+	options: Options;
+	params: FooterParams;
 	onNewHero: () => void;
 }
 
 export const WelcomePage = (props: Props) => {
 	const isSmall = useMediaQuery('(max-width: 1000px)');
-	const [ showBanner, setShowBanner ] = useState<boolean>(true);
+	const [ tips ] = useState<Tip[]>([
+		...Collections.shuffle(TipData.getTips().filter(t => t.isNew)),
+		...Collections.shuffle(TipData.getTips().filter(t => !t.isNew))
+	]);
+	const [ showTips, setShowTips ] = useState<boolean>(true);
+	const [ tipIndex, setTipIndex ] = useState<number>(0);
 
 	if (isSmall) {
 		return (
@@ -47,17 +51,9 @@ export const WelcomePage = (props: Props) => {
 					</div>
 					<AppFooter
 						page='welcome'
-						highlightAbout={props.highlightAbout}
-						showReference={props.showReference}
-						showRoll={props.showRoll}
-						showAbout={props.showAbout}
-						showSettings={props.showSettings}
+						options={props.options}
+						params={props.params}
 					/>
-					{
-						showBanner ?
-							<Banner onClose={() => setShowBanner(false)} />
-							: null
-					}
 				</div>
 			</ErrorBoundary>
 		);
@@ -75,27 +71,52 @@ export const WelcomePage = (props: Props) => {
 				/>
 				<div className='welcome-page-content'>
 					<div className='welcome-column'>
-						<Welcome
-							onNewHero={props.onNewHero}
-						/>
+						<Welcome onNewHero={props.onNewHero} />
 					</div>
-					<div className='tip-column'>
-						<Tips />
-					</div>
+					{
+						showTips ?
+							<div className='tip-column'>
+								<Flex justify='center'>
+									<ButtonGroup
+										buttons={[
+											{
+												type: 'button',
+												tooltip: 'Previous Tip',
+												icon: <DoubleLeftOutlined />,
+												disabled: tipIndex <= 0,
+												onClick: () => setTipIndex(tipIndex - 1)
+											},
+											{
+												type: 'button',
+												tooltip: 'Hide Tips',
+												icon: <BulbFilled style={{ color: 'rgba(64, 150, 255)' }} />,
+												onClick: () => setShowTips(false)
+											},
+											{
+												type: 'button',
+												tooltip: 'Next Tip',
+												icon: <DoubleRightOutlined />,
+												onClick: () => setTipIndex(tipIndex + 1)
+											}
+										]}
+									/>
+								</Flex>
+								<TipPanel tip={tips[tipIndex % tips.length]} />
+							</div>
+							:
+							<Button
+								type='text'
+								icon={<BulbOutlined />}
+								title='Show Tips'
+								onClick={() => setShowTips(true)}
+							/>
+					}
 				</div>
 				<AppFooter
 					page='welcome'
-					highlightAbout={props.highlightAbout}
-					showReference={props.showReference}
-					showRoll={props.showRoll}
-					showAbout={props.showAbout}
-					showSettings={props.showSettings}
+					options={props.options}
+					params={props.params}
 				/>
-				{
-					showBanner ?
-						<Banner onClose={() => setShowBanner(false)} />
-						: null
-				}
 			</div>
 		</ErrorBoundary>
 	);
@@ -343,52 +364,5 @@ const Welcome = (props: WelcomeProps) => {
 				</SelectablePanel>
 			</div>
 		</ErrorBoundary>
-	);
-};
-
-const Tips = () => {
-	const [ tips ] = useState<Tip[]>([
-		...Collections.shuffle(TipData.getTips().filter(t => t.isNew)),
-		...Collections.shuffle(TipData.getTips().filter(t => !t.isNew))
-	]);
-	const [ tipIndex, setTipIndex ] = useState<number>(0);
-
-	const prevTip = () => {
-		const index = tipIndex - 1;
-		setTipIndex(Math.max(index, 0));
-	};
-
-	const nextTip = () => {
-		const index = tipIndex + 1;
-		setTipIndex(Math.min(index, tips.length - 1));
-	};
-
-	return (
-		<ErrorBoundary>
-			<TipPanel
-				tip={tips[tipIndex]}
-				onPrevious={tipIndex === 0 ? undefined : prevTip}
-				onNext={tipIndex === tips.length - 1 ? undefined : nextTip}
-			/>
-		</ErrorBoundary>
-	);
-};
-
-interface BannerProps {
-	onClose: () => void;
-}
-
-const Banner = (props: BannerProps) => {
-	return (
-		<div className='banner-container' onClick={e => e.stopPropagation()}>
-			<div className='banner'>
-				<HeaderText extra={<Button type='text' icon={<CloseOutlined />} onClick={props.onClose} />}>
-					FORGE STEEL has a new home!
-				</HeaderText>
-				<div>
-					Export your heroes and homebrew sourcebooks <a href='https://andyaiken.github.io/forgesteel/#/backup'>here</a>, then join us at <a href='https://forgesteel.net'>https://forgesteel.net</a>.
-				</div>
-			</div>
-		</div>
 	);
 };

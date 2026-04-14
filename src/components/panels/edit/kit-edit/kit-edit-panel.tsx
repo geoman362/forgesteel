@@ -1,24 +1,17 @@
-import { Alert, Button, Select, Slider, Space, Tabs } from 'antd';
-import { CaretDownOutlined, CaretUpOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { Alert, Select, Slider, Space, Tabs } from 'antd';
 import { ReactNode, useState } from 'react';
 import { CheckLabel } from '@/components/controls/check-label/check-label';
 import { Collections } from '@/utils/collections';
-import { DangerButton } from '@/components/controls/danger-button/danger-button';
-import { Empty } from '@/components/controls/empty/empty';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Expander } from '@/components/controls/expander/expander';
-import { FactoryLogic } from '@/logic/factory-logic';
 import { Feature } from '@/models/feature';
-import { FeatureEditPanel } from '@/components/panels/edit/feature-edit/feature-edit-panel';
-import { FeatureLogic } from '@/logic/feature-logic';
+import { FeatureListEditPanel } from '@/components/panels/edit/feature-list-edit/feature-list-edit-panel';
 import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Kit } from '@/models/kit';
 import { KitArmor } from '@/enums/kit-armor';
 import { KitPanel } from '@/components/panels/elements/kit-panel/kit-panel';
 import { KitWeapon } from '@/enums/kit-weapon';
-import { MarkdownEditor } from '@/components/controls/markdown/markdown';
-import { NameGenerator } from '@/utils/name-generator';
+import { NameDescEditPanel } from '@/components/panels/edit/name-desc-edit/name-desc-edit-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Options } from '@/models/options';
 import { PanelMode } from '@/enums/panel-mode';
@@ -43,36 +36,19 @@ export const KitEditPanel = (props: Props) => {
 	const [ kit, setKit ] = useState<Kit>(props.kit);
 
 	const getNameAndDescriptionSection = () => {
-		const setName = (value: string) => {
+		const onChange = (name: string, desc: string) => {
 			const copy = Utils.copy(kit);
-			copy.name = value;
-			setKit(copy);
-			props.onChange(copy);
-		};
-
-		const setDescription = (value: string) => {
-			const copy = Utils.copy(kit);
-			copy.description = value;
+			copy.name = name;
+			copy.description = desc;
 			setKit(copy);
 			props.onChange(copy);
 		};
 
 		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<HeaderText>Name</HeaderText>
-				<Space.Compact style={{ width: '100%' }}>
-					<TextInput
-						status={kit.name === '' ? 'warning' : ''}
-						placeholder='Name'
-						allowClear={true}
-						value={kit.name}
-						onChange={setName}
-					/>
-					<Button icon={<ThunderboltOutlined />} onClick={() => setName(NameGenerator.generateName())} />
-				</Space.Compact>
-				<HeaderText>Description</HeaderText>
-				<MarkdownEditor value={kit.description} onChange={setDescription} />
-			</Space>
+			<NameDescEditPanel
+				element={kit}
+				onChange={onChange}
+			/>
 		);
 	};
 
@@ -107,16 +83,19 @@ export const KitEditPanel = (props: Props) => {
 					value={kit.type}
 					onChange={setType}
 				/>
-				<Alert
-					type='info'
-					showIcon={true}
-					title='If your kit has a Type, it can only be selected from a kit feature that specifies this value.'
-				/>
+				{
+					kit.type ?
+						<Alert
+							type='info'
+							showIcon={true}
+							title='If your kit has a Type, it can only be selected from a kit feature that specifies this value.'
+						/>
+						: null
+				}
 				<HeaderText>Armor</HeaderText>
 				<Select
 					style={{ width: '100%' }}
-					status={kit.armor.length === 0 ? 'warning' : ''}
-					mode='multiple'
+					mode='tags'
 					allowClear={true}
 					placeholder='Select armor'
 					options={[ KitArmor.Light, KitArmor.Medium, KitArmor.Heavy, KitArmor.Shield ].map(option => ({ value: option }))}
@@ -127,8 +106,7 @@ export const KitEditPanel = (props: Props) => {
 				<HeaderText>Weapons</HeaderText>
 				<Select
 					style={{ width: '100%' }}
-					status={kit.weapon.length === 0 ? 'warning' : ''}
-					mode='multiple'
+					mode='tags'
 					allowClear={true}
 					placeholder='Select weapon'
 					options={[ KitWeapon.Bow, KitWeapon.Ensnaring, KitWeapon.Heavy, KitWeapon.Light, KitWeapon.Medium, KitWeapon.Polearm, KitWeapon.Unarmed, KitWeapon.Whip ].map(option => ({ value: option }))}
@@ -312,78 +290,21 @@ export const KitEditPanel = (props: Props) => {
 	};
 
 	const getFeaturesEditSection = () => {
-		const addFeature = () => {
+		const onChange = (features: Feature[]) => {
 			const copy = Utils.copy(kit);
-			copy.features.push(FactoryLogic.feature.create({
-				id: Utils.guid(),
-				name: '',
-				description: ''
-			}));
-			setKit(copy);
-			props.onChange(copy);
-		};
-
-		const changeFeature = (feature: Feature) => {
-			const copy = Utils.copy(kit);
-			const index = copy.features.findIndex(f => f.id === feature.id);
-			if (index !== -1) {
-				copy.features[index] = feature;
-			}
-			setKit(copy);
-			props.onChange(copy);
-		};
-
-		const moveFeature = (feature: Feature, direction: 'up' | 'down') => {
-			const copy = Utils.copy(kit);
-			const index = copy.features.findIndex(f => f.id === feature.id);
-			copy.features = Collections.move(copy.features, index, direction);
-			setKit(copy);
-			props.onChange(copy);
-		};
-
-		const deleteFeature = (feature: Feature) => {
-			const copy = Utils.copy(kit);
-			copy.features = copy.features.filter(f => f.id !== feature.id);
+			copy.features = Utils.copy(features);
 			setKit(copy);
 			props.onChange(copy);
 		};
 
 		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<HeaderText
-					extra={
-						<Button type='text' icon={<PlusOutlined />} onClick={addFeature} />
-					}
-				>
-					Features
-				</HeaderText>
-				{
-					kit.features.map(f => (
-						<Expander
-							key={f.id}
-							title={f.name || 'Unnamed Feature'}
-							tags={[ FeatureLogic.getFeatureTag(f) ]}
-							extra={[
-								<Button key='up' type='text' title='Move Up' icon={<CaretUpOutlined />} onClick={e => { e.stopPropagation(); moveFeature(f, 'up'); }} />,
-								<Button key='down' type='text' title='Move Down' icon={<CaretDownOutlined />} onClick={e => { e.stopPropagation(); moveFeature(f, 'down'); }} />,
-								<DangerButton key='delete' mode='clear' onConfirm={e => { e.stopPropagation(); deleteFeature(f); }} />
-							]}
-						>
-							<FeatureEditPanel
-								feature={f}
-								sourcebooks={props.sourcebooks}
-								options={props.options}
-								onChange={changeFeature}
-							/>
-						</Expander>
-					))
-				}
-				{
-					kit.features.length === 0 ?
-						<Empty />
-						: null
-				}
-			</Space>
+			<FeatureListEditPanel
+				title='Features'
+				features={kit.features}
+				sourcebooks={props.sourcebooks}
+				options={props.options}
+				onChange={onChange}
+			/>
 		);
 	};
 

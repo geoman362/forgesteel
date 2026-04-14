@@ -1,5 +1,5 @@
-import { Alert, Button, Divider, Drawer, Flex, Segmented, Select, Space } from 'antd';
-import { CopyOutlined, FlagFilled, FlagOutlined, MoonOutlined, SettingOutlined, SunOutlined } from '@ant-design/icons';
+import { Alert, Button, Drawer, Flex, Segmented, Select, Space } from 'antd';
+import { FlagFilled, FlagOutlined, MoonOutlined, SettingOutlined, SunOutlined } from '@ant-design/icons';
 import { AbilityData } from '@/data/ability-data';
 import { Collections } from '@/utils/collections';
 import { ConnectionSettings } from '@/models/connection-settings';
@@ -18,7 +18,6 @@ import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Options } from '@/models/options';
 import { PanelWidth } from '@/enums/panel-width';
 import { PatreonConnectPanel } from '@/components/panels/connection-settings/patreon-connect-panel';
-import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { SheetPageSize } from '@/enums/sheet-page-size';
 import { StandardAbilitySelectModal } from '@/components/modals/select/standard-ability-select/standard-ability-select-modal';
 import { TextInput } from '@/components/controls/text-input/text-input';
@@ -32,13 +31,11 @@ import './settings-modal.scss';
 
 interface Props {
 	options: Options;
-	errors: Event[];
 	heroes: Hero[];
 	setOptions: (options: Options) => void;
 	connectionSettings: ConnectionSettings;
 	dataService: DataService;
 	setConnectionSettings: (settings: ConnectionSettings) => void
-	clearErrors: () => void;
 	onClose: () => void;
 }
 
@@ -170,13 +167,6 @@ export const SettingsModal = (props: Props) => {
 	};
 
 	const getHeroesInteractive = () => {
-		const setSeparateInventoryFeatures = (value: boolean) => {
-			const copy = Utils.copy(options);
-			copy.separateInventoryFeatures = value;
-			setOptions(copy);
-			props.setOptions(copy);
-		};
-
 		const setShowSkillsInGroups = (value: boolean) => {
 			const copy = Utils.copy(options);
 			copy.showSkillsInGroups = value;
@@ -215,7 +205,6 @@ export const SettingsModal = (props: Props) => {
 		return (
 			<Expander title='Heroes - Interactive View'>
 				<Space orientation='vertical' style={{ width: '100%' }}>
-					<Toggle label='Separate inventory features' value={options.separateInventoryFeatures} onChange={setSeparateInventoryFeatures} />
 					<Toggle label='Show skills in groups' value={options.showSkillsInGroups} onChange={setShowSkillsInGroups} />
 					<Toggle label='Show feature / ability sources' value={options.showSources} onChange={setShowSources} />
 					<LabelControl
@@ -621,6 +610,50 @@ export const SettingsModal = (props: Props) => {
 		);
 	};
 
+	const getConnections = () => {
+		const getWarehouseConnection = () => {
+			if (FeatureFlags.hasFlag(FeatureFlags.warehouse.code)) {
+				return (
+					<ConnectionSettingsPanel
+						connectionSettings={connectionSettings}
+						setConnectionSettings={updateConnectionSettings}
+					/>
+				);
+			}
+
+			return null;
+		};
+
+		return (
+			<Expander title='Connections'>
+				<Space orientation='vertical' style={{ width: '100%' }}>
+					<PatreonConnectPanel
+						connectionSettings={connectionSettings}
+						setConnectionSettings={updateConnectionSettings}
+					/>
+					<WarehouseActionsPanel
+						connectionSettings={connectionSettings}
+					/>
+					{getWarehouseConnection()}
+					{
+						reloadNeeded ?
+							<Alert
+								title='Reload Forge Steel to use new settings'
+								type='info'
+								showIcon
+								action={
+									<Button size='small' type='primary' onClick={() => location.reload()}>
+										Reload
+									</Button>
+								}
+							/>
+							: null
+					}
+				</Space>
+			</Expander>
+		);
+	};
+
 	const getFeatureFlags = () => {
 		return (
 			<Expander title='Feature Flags'>
@@ -673,121 +706,6 @@ export const SettingsModal = (props: Props) => {
 		);
 	};
 
-	const getWarehouseSettings = () => {
-		if (FeatureFlags.hasFlag(FeatureFlags.warehouse.code)) {
-			return (
-				<Expander title='Forge Steel Warehouse'>
-					<Space orientation='vertical' style={{ width: '100%' }}>
-						{
-							connectionSettings.useWarehouse ?
-								<>
-									<WarehouseActionsPanel
-										connectionSettings={connectionSettings}
-									/>
-									<Divider size='small' />
-								</>
-								: null
-						}
-						<ConnectionSettingsPanel
-							connectionSettings={connectionSettings}
-							setConnectionSettings={updateConnectionSettings}
-						/>
-						{
-							reloadNeeded ?
-								<Alert
-									title='Reload Forge Steel to use new settings'
-									type='info'
-									showIcon
-									action={
-										<Button size='small' type='primary' onClick={() => location.reload()}>
-											Reload
-										</Button>
-									}
-								/>
-								: null
-						}
-					</Space>
-				</Expander>
-			);
-		}
-	};
-
-	const getPatreonSettings = () => {
-		if (FeatureFlags.hasFlag(FeatureFlags.patreon.code)) {
-			return (
-				<Expander title='Patreon'>
-					<PatreonConnectPanel
-						connectionSettings={connectionSettings}
-						setConnectionSettings={updateConnectionSettings}
-						dataService={props.dataService}
-					/>
-				</Expander>
-			);
-		}
-	};
-
-	const getErrors = () => {
-		const clearErrors = () => {
-			props.clearErrors();
-			props.onClose();
-		};
-
-		const getError = (event: Event, index: number) => {
-			let message = '';
-			let output = '';
-			const fields: { label: string, value: string }[] = [
-				{ label: 'Type', value: `${event.type}` }
-			];
-
-			if (event.type === 'error') {
-				const error = event as ErrorEvent;
-
-				message = error.message;
-				output = `title ${error.message}, file ${error.filename}, line ${error.lineno}, col ${error.colno}, data ${JSON.stringify(error.error)}`;
-
-				fields.push({ label: 'Location', value: `${error.filename}, line ${error.lineno}, column ${error.colno}` });
-				fields.push({ label: 'Data', value: JSON.stringify(error.error) });
-			}
-
-			if (event.type === 'unhandledrejection') {
-				const error = event as PromiseRejectionEvent;
-
-				message = JSON.stringify(error.reason);
-				output = `reason ${JSON.stringify(error.reason)}`;
-			}
-
-			return (
-				<SelectablePanel key={index}>
-					<HeaderText
-						extra={
-							<Button
-								type='text'
-								icon={<CopyOutlined />}
-								onClick={() => navigator.clipboard.writeText(output)}
-							/>
-						}
-					>
-						{message}
-					</HeaderText>
-					{fields.map((field, n) => <Field key={n} label={field.label} value={field.value} />)}
-				</SelectablePanel>
-			);
-		};
-
-		return props.errors.length > 0 ?
-			<Expander
-				title='Logs'
-				extra={[
-					<DangerButton key='clear' mode='clear' onConfirm={clearErrors} />
-				]}
-			>
-				<Space orientation='vertical' style={{ width: '100%' }}>
-					{props.errors.map(getError)}
-				</Space>
-			</Expander>
-			: null;
-	};
-
 	const getContent = () => {
 		switch (page) {
 			case 'Settings':
@@ -802,15 +720,13 @@ export const SettingsModal = (props: Props) => {
 						{getEncounterRunner()}
 						{getDifficulty()}
 						{getTacticalMaps()}
+						{getConnections()}
 					</Space>
 				);
-			case 'Admin':
+			case 'Advanced':
 				return (
 					<Space orientation='vertical' style={{ width: '100%' }}>
 						{getFeatureFlags()}
-						{getWarehouseSettings()}
-						{getPatreonSettings()}
-						{getErrors()}
 					</Space>
 				);
 		}
@@ -824,7 +740,7 @@ export const SettingsModal = (props: Props) => {
 				<Flex align='center' justify='center' style={{ width: '100%' }}>
 					<Segmented
 						name='tabs'
-						options={[ 'Settings', 'Admin' ]}
+						options={[ 'Settings', 'Advanced' ]}
 						value={page}
 						onChange={setPage}
 					/>

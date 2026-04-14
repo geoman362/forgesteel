@@ -24,6 +24,7 @@ import { HeroLogic } from '@/logic/hero-logic';
 import { KitArmor } from '@/enums/kit-armor';
 import { KitWeapon } from '@/enums/kit-weapon';
 import { Modal } from '@/components/modals/modal/modal';
+import { ModifierEditor } from '@/components/panels/edit/modifier-edit/modifier-edit-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Options } from '@/models/options';
 import { PerkList } from '@/enums/perk-list';
@@ -94,7 +95,6 @@ export const HeroCustomizeModal = (props: Props) => {
 						<div className='customize-option-section'>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createClassAbilityChoice({
@@ -107,7 +107,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createAbility({
@@ -129,7 +128,6 @@ export const HeroCustomizeModal = (props: Props) => {
 						<div className='customize-option-section'>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createCharacteristicBonus({
@@ -144,7 +142,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createConditionImmunity({
@@ -157,7 +154,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createDamageModifier({
@@ -170,7 +166,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createBonus({
@@ -188,7 +183,6 @@ export const HeroCustomizeModal = (props: Props) => {
 						<div className='customize-option-section'>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createAncestryFeature({
@@ -204,7 +198,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createKitChoice({
@@ -216,7 +209,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createPerk({
@@ -232,19 +224,6 @@ export const HeroCustomizeModal = (props: Props) => {
 						<div className='customize-option-section'>
 							<Button
 								block={true}
-								type='text'
-								onClick={() => {
-									setMenuOpen(false);
-									addFeature(FactoryLogic.feature.createCompanion({
-										id: Utils.guid()
-									}));
-								}}
-							>
-								Companion / Mount
-							</Button>
-							<Button
-								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createFollower({
@@ -253,11 +232,22 @@ export const HeroCustomizeModal = (props: Props) => {
 									}));
 								}}
 							>
-								Follower
+								Artisan
 							</Button>
 							<Button
 								block={true}
-								type='text'
+								onClick={() => {
+									setMenuOpen(false);
+									addFeature(FactoryLogic.feature.createFollower({
+										id: Utils.guid(),
+										follower: FactoryLogic.createFollower(FollowerType.Sage)
+									}));
+								}}
+							>
+								Sage
+							</Button>
+							<Button
+								block={true}
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createRetainer({
@@ -267,12 +257,22 @@ export const HeroCustomizeModal = (props: Props) => {
 							>
 								Retainer
 							</Button>
+							<Button
+								block={true}
+								onClick={() => {
+									setMenuOpen(false);
+									addFeature(FactoryLogic.feature.createCompanion({
+										id: Utils.guid()
+									}));
+								}}
+							>
+								Companion / Mount
+							</Button>
 						</div>
 						<HeaderText level={3}>Miscellaneous</HeaderText>
 						<div className='customize-option-section'>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createLanguageChoice({
@@ -285,7 +285,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createMovementMode({
@@ -298,7 +297,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createProficiency({
@@ -310,7 +308,6 @@ export const HeroCustomizeModal = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								type='text'
 								onClick={() => {
 									setMenuOpen(false);
 									addFeature(FactoryLogic.feature.createSkillChoice({
@@ -526,23 +523,18 @@ export const HeroCustomizeModal = (props: Props) => {
 						<Select
 							style={{ width: '100%' }}
 							placeholder='Select field'
-							options={[ FeatureField.AncestryPoints, FeatureField.Disengage, FeatureField.ProjectPoints, FeatureField.Recoveries, FeatureField.RecoveryValue, FeatureField.Renown, FeatureField.Save, FeatureField.Speed, FeatureField.Stability, FeatureField.Stamina, FeatureField.Wealth ].map(o => ({ value: o }))}
+							options={[ FeatureField.AncestryPoints, FeatureField.Disengage, FeatureField.ForcedMovementPush, FeatureField.ForcedMovementPull, FeatureField.ForcedMovementSlide, FeatureField.ProjectPoints, FeatureField.Recoveries, FeatureField.RecoveryValue, FeatureField.Renown, FeatureField.Save, FeatureField.Speed, FeatureField.Stability, FeatureField.Stamina, FeatureField.Wealth ].map(o => ({ value: o }))}
 							optionRender={option => <div className='ds-text'>{option.data.value}</div>}
 							value={feature.data.field}
 							onChange={setValueField}
 						/>
 						<HeaderText>Value</HeaderText>
-						<NumberSpin label='Value' min={0} value={feature.data.value} onChange={setValueBonus} />
-						<NumberSpin label='Per Level After 1st' min={0} value={feature.data.valuePerLevel} onChange={setValuePerLevel} />
-						<NumberSpin label='Per Echelon' min={0} value={feature.data.valuePerEchelon} onChange={setValuePerEchelon} />
-						<Select
-							style={{ width: '100%' }}
-							placeholder='Characteristics'
-							mode='multiple'
-							options={[ Characteristic.Might, Characteristic.Agility, Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ].map(option => ({ value: option }))}
-							optionRender={option => <div className='ds-text'>{option.data.value}</div>}
-							value={feature.data.valueCharacteristics}
-							onChange={setValueCharacteristics}
+						<ModifierEditor
+							modifier={feature.data}
+							setValue={setValueBonus}
+							setValuePerLevel={setValuePerLevel}
+							setValuePerEchelon={setValuePerEchelon}
+							setValueCharacteristics={setValueCharacteristics}
 						/>
 					</Space>
 				);
@@ -624,17 +616,12 @@ export const HeroCustomizeModal = (props: Props) => {
 							onChange={setDamageModifierType}
 						/>
 						<HeaderText>Value</HeaderText>
-						<NumberSpin label='Value' min={0} value={feature.data.modifiers[0].value} onChange={setDamageModifierBonus} />
-						<NumberSpin label='Per Level After 1st' min={0} value={feature.data.modifiers[0].valuePerLevel} onChange={setDamageModifierValuePerLevel} />
-						<NumberSpin label='Per Echelon' min={0} value={feature.data.modifiers[0].valuePerEchelon} onChange={setDamageModifierValuePerEchelon} />
-						<Select
-							style={{ width: '100%' }}
-							placeholder='Characteristics'
-							mode='multiple'
-							options={[ Characteristic.Might, Characteristic.Agility, Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ].map(option => ({ value: option }))}
-							optionRender={option => <div className='ds-text'>{option.data.value}</div>}
-							value={feature.data.modifiers[0].valueCharacteristics}
-							onChange={setDamageModifierCharacteristics}
+						<ModifierEditor
+							modifier={feature.data.modifiers[0]}
+							setValue={setDamageModifierBonus}
+							setValuePerLevel={setDamageModifierValuePerLevel}
+							setValuePerEchelon={setDamageModifierValuePerEchelon}
+							setValueCharacteristics={setDamageModifierCharacteristics}
 						/>
 					</Space>
 				);
@@ -680,7 +667,7 @@ export const HeroCustomizeModal = (props: Props) => {
 						<Select
 							style={{ width: '100%' }}
 							placeholder='Weapons'
-							mode='multiple'
+							mode='tags'
 							allowClear={true}
 							options={[ KitWeapon.Bow, KitWeapon.Ensnaring, KitWeapon.Heavy, KitWeapon.Light, KitWeapon.Medium, KitWeapon.Polearm, KitWeapon.Unarmed, KitWeapon.Whip ].map(option => ({ value: option }))}
 							optionRender={option => <div className='ds-text'>{option.data.value}</div>}
@@ -691,7 +678,7 @@ export const HeroCustomizeModal = (props: Props) => {
 						<Select
 							style={{ width: '100%' }}
 							placeholder='Armor'
-							mode='multiple'
+							mode='tags'
 							allowClear={true}
 							options={[ KitArmor.Heavy, KitArmor.Light, KitArmor.Medium, KitArmor.Shield ].map(option => ({ value: option }))}
 							optionRender={option => <div className='ds-text'>{option.data.value}</div>}

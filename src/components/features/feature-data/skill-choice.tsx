@@ -31,23 +31,19 @@ export const InfoSkillChoice = (props: InfoProps) => {
 		);
 	}
 
-	if (!props.feature.description) {
-		const count = props.data.count || 1;
+	const count = props.data.count || 1;
 
-		let str = '';
-		if (props.data.listOptions.length === 5) {
-			str = (count > 1 ? `Choose ${count} skills.` : 'Choose a skill.');
-		} else {
-			const names = (Collections.sort(props.data.options, o => o) || []).concat((Collections.sort(props.data.listOptions, o => o) || []).map(l => `the ${l} list`)).join(', ');
-			str = (count > 1 ? `Choose ${count} skills from ${names}.` : `Choose a skill from ${names}.`);
-		}
-
-		return (
-			<div className='ds-text'>{str}</div>
-		);
+	let str;
+	if (props.data.listOptions.length === 5) {
+		str = (count > 1 ? `Choose ${count} skills.` : 'Choose a skill.');
+	} else {
+		const names = (Collections.sort(props.data.options, o => o) || []).concat((Collections.sort(props.data.listOptions, o => o) || []).map(l => `the ${l} list`)).join(', ');
+		str = (count > 1 ? `Choose ${count} skills from ${names}.` : `Choose a skill from ${names}.`);
 	}
 
-	return null;
+	return (
+		<div className='ds-text'>{str}</div>
+	);
 };
 
 interface EditProps {
@@ -100,7 +96,7 @@ export const EditSkillChoice = (props: EditProps) => {
 				style={{ width: '100%' }}
 				placeholder='Skills'
 				allowClear={true}
-				mode='multiple'
+				mode='tags'
 				options={SourcebookLogic.getSkills(props.sourcebooks).map(option => ({ value: option.name, description: option.description }))}
 				optionRender={option => <Field label={option.data.value} value={option.data.description} />}
 				value={data.options}
@@ -124,7 +120,7 @@ export const EditSkillChoice = (props: EditProps) => {
 				style={{ width: '100%' }}
 				placeholder='Selection'
 				allowClear={true}
-				mode='multiple'
+				mode='tags'
 				options={sortedSkills.map(option => ({ value: option.name }))}
 				optionRender={option => <div className='ds-text'>{option.data.value}</div>}
 				value={data.selected}
@@ -152,15 +148,6 @@ export const ConfigSkillChoice = (props: ConfigProps) => {
 		.filter(skill => !currentSkills.includes(skill.name));
 	const distinctSkills = Collections.distinct(skills, s => s.name);
 	const sortedSkills = Collections.sort(distinctSkills, s => s.name);
-
-	const getAddButton = () => {
-		// We can always add a custom skill, so we always show the Add button
-		return (
-			<Button className='status-warning' block={true} onClick={() => setSkillSelectorOpen(true)}>
-				Choose a Skill
-			</Button>
-		);
-	};
 
 	return (
 		<Space orientation='vertical' style={{ width: '100%' }}>
@@ -207,7 +194,13 @@ export const ConfigSkillChoice = (props: ConfigProps) => {
 					);
 				})
 			}
-			{(props.data.selected.length < props.data.count) || (props.data.count === -1) ? getAddButton() : null}
+			{
+				(props.data.selected.length < props.data.count) || (props.data.count === -1) ?
+					<Button className='status-warning' block={true} onClick={() => setSkillSelectorOpen(true)}>
+						Choose a Skill
+					</Button>
+					: null
+			}
 			<Drawer open={skillSelectorOpen} onClose={() => setSkillSelectorOpen(false)} closeIcon={null} size={500}>
 				<SkillSelectModal
 					skills={sortedSkills}

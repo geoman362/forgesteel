@@ -1,5 +1,5 @@
-import { Button, Divider, Drawer, Flex, Segmented, Select, Space, Tabs, Upload } from 'antd';
-import { CaretDownOutlined, CaretUpOutlined, DownloadOutlined, ImportOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { Alert, Button, Divider, Drawer, Flex, Popover, Segmented, Select, Space, Tabs, Upload } from 'antd';
+import { DownloadOutlined, ImportOutlined, InfoCircleOutlined, ThunderboltOutlined, ToolOutlined } from '@ant-design/icons';
 import { Characteristic } from '@/enums/characteristic';
 import { Collections } from '@/utils/collections';
 import { DamageType } from '@/enums/damage-type';
@@ -10,6 +10,7 @@ import { Expander } from '@/components/controls/expander/expander';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { Feature } from '@/models/feature';
 import { FeatureEditPanel } from '@/components/panels/edit/feature-edit/feature-edit-panel';
+import { FeatureListEditPanel } from '@/components/panels/edit/feature-list-edit/feature-list-edit-panel';
 import { FeatureLogic } from '@/logic/feature-logic';
 import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';
 import { FeatureType } from '@/enums/feature-type';
@@ -25,7 +26,7 @@ import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
 import { MonsterRoleType } from '@/enums/monster-role-type';
 import { MonsterSelectModal } from '@/components/modals/select/monster-select/monster-select-modal';
-import { NameGenerator } from '@/utils/name-generator';
+import { NameDescEditPanel } from '@/components/panels/edit/name-desc-edit/name-desc-edit-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Options } from '@/models/options';
 import { PanelMode } from '@/enums/panel-mode';
@@ -47,26 +48,79 @@ interface Props {
 	options: Options;
 	mode?: PanelMode;
 	onChange: (monster: Monster) => void;
+	onSelectMonster?: (monster: Monster, group: MonsterGroup) => void;
 }
 
 export const MonsterEditPanel = (props: Props) => {
 	const [ monster, setMonster ] = useState<Monster>(props.monster);
-	const [ selectedCategory, setSelectedCategory ] = useState<MonsterFeatureCategory>(MonsterFeatureCategory.Text);
+	const [ selectedCategory, setSelectedCategory ] = useState<MonsterFeatureCategory>(MonsterFeatureCategory.Signature);
 	const [ scratchpadMonsters, setScratchpadMonsters ] = useState<Monster[]>([]);
 	const [ hiddenMonsterIDs, setHiddenMonsterIDs ] = useState<string[]>([]);
 	const [ drawerOpen, setDrawerOpen ] = useState<boolean>(false);
 
-	const getNameAndDescriptionSection = () => {
-		const setName = (value: string) => {
-			const copy = Utils.copy(monster);
-			copy.name = value;
-			setMonster(copy);
-			props.onChange(copy);
-		};
+	const setEncounterValue = (value: number) => {
+		const copy = Utils.copy(monster);
+		copy.encounterValue = value;
+		setMonster(copy);
+		props.onChange(copy);
+	};
 
-		const setDescription = (value: string) => {
+	const setSpeedValue = (value: number) => {
+		const copy = Utils.copy(monster);
+		copy.speed.value = value;
+		setMonster(copy);
+		props.onChange(copy);
+	};
+
+	const setMovementModes = (value: string) => {
+		const copy = Utils.copy(monster);
+		copy.speed.modes = value ? [ value ] : [];
+		setMonster(copy);
+		props.onChange(copy);
+	};
+
+	const setStamina = (value: number) => {
+		const copy = Utils.copy(monster);
+		copy.stamina = value;
+		setMonster(copy);
+		props.onChange(copy);
+	};
+
+	const setStability = (value: number) => {
+		const copy = Utils.copy(monster);
+		copy.stability = value;
+		setMonster(copy);
+		props.onChange(copy);
+	};
+
+	const setFreeStrikeDamage = (value: number) => {
+		const copy = Utils.copy(monster);
+		copy.freeStrikeDamage = value;
+		setMonster(copy);
+		props.onChange(copy);
+	};
+
+	const setFreeStrikeType = (value: DamageType) => {
+		const copy = Utils.copy(monster);
+		copy.freeStrikeType = value;
+		setMonster(copy);
+		props.onChange(copy);
+	};
+
+	const setCharacteristic = (ch: Characteristic, value: number) => {
+		const copy = Utils.copy(monster);
+		copy.characteristics
+			.filter(c => c.characteristic === ch)
+			.forEach(c => c.value = value);
+		setMonster(copy);
+		props.onChange(copy);
+	};
+
+	const getNameAndDescriptionSection = () => {
+		const setNameDesc = (name: string, desc: string) => {
 			const copy = Utils.copy(monster);
-			copy.description = value;
+			copy.name = name;
+			copy.description = desc;
 			setMonster(copy);
 			props.onChange(copy);
 		};
@@ -78,29 +132,13 @@ export const MonsterEditPanel = (props: Props) => {
 			props.onChange(copy);
 		};
 
-		const setRandomName = () => {
-			if (props.monsterGroup && props.monsterGroup.name) {
-				setName(`${props.monsterGroup.name} ${NameGenerator.generateName()}`);
-			} else {
-				setName(NameGenerator.generateName());
-			}
-		};
-
 		return (
 			<Space orientation='vertical' style={{ width: '100%' }}>
-				<HeaderText>Name</HeaderText>
-				<Space.Compact style={{ width: '100%' }}>
-					<TextInput
-						status={monster.name === '' ? 'warning' : ''}
-						placeholder='Name'
-						allowClear={true}
-						value={monster.name}
-						onChange={setName}
-					/>
-					<Button icon={<ThunderboltOutlined />} onClick={setRandomName} />
-				</Space.Compact>
-				<HeaderText>Description</HeaderText>
-				<MarkdownEditor value={monster.description} onChange={setDescription} />
+				<NameDescEditPanel
+					element={monster}
+					showNameGenerator={true}
+					onChange={setNameDesc}
+				/>
 				<HeaderText>Portrait</HeaderText>
 				{
 					monster.picture ?
@@ -115,10 +153,11 @@ export const MonsterEditPanel = (props: Props) => {
 							showUploadList={false}
 							beforeUpload={file => {
 								const reader = new FileReader();
-								reader.onload = progress => {
+								reader.onload = async progress => {
 									if (progress.target) {
 										const content = progress.target.result as string;
-										setPicture(content);
+										const resized = await Utils.getResizedImage(content);
+										setPicture(resized);
 									}
 								};
 								reader.readAsDataURL(file);
@@ -225,16 +264,21 @@ export const MonsterEditPanel = (props: Props) => {
 			props.onChange(copy);
 		};
 
-		const setEncounterValue = (value: number) => {
+		const setSizeValue = (value: number) => {
 			const copy = Utils.copy(monster);
-			copy.encounterValue = value;
+			copy.size.value = value;
+			if (copy.size.value === 1) {
+				copy.size.mod = 'M';
+			}
 			setMonster(copy);
 			props.onChange(copy);
 		};
 
-		const selectRandomEncounterValue = () => {
-			const values = getSimilarMonsters().map(m => m.encounterValue);
-			setEncounterValue(Collections.draw(values));
+		const setSizeMod = (value: '' | 'T' | 'S' | 'M' | 'L') => {
+			const copy = Utils.copy(monster);
+			copy.size.mod = value;
+			setMonster(copy);
+			props.onChange(copy);
 		};
 
 		return (
@@ -265,109 +309,6 @@ export const MonsterEditPanel = (props: Props) => {
 					value={monster.role.type}
 					onChange={setRoleType}
 				/>
-				<HeaderText>Encounter Value</HeaderText>
-				<NumberSpin min={1} value={monster.encounterValue} steps={[ 1, 10 ]} onChange={setEncounterValue} />
-				{
-					getSimilarMonsters().length > 0 ?
-						<Expander
-							title='Similar Monsters'
-							extra={[
-								<Button key='random' type='text' title='Random' icon={<ThunderboltOutlined />} onClick={e => { e.stopPropagation(); selectRandomEncounterValue(); }} />
-							]}
-						>
-							<HeaderText>Encounter Value</HeaderText>
-							<HistogramPanel
-								min={0}
-								values={getSimilarMonsters().map(m => m.encounterValue)}
-								selected={monster.encounterValue}
-								onSelect={setEncounterValue}
-							/>
-						</Expander>
-						: null
-				}
-			</Space>
-		);
-	};
-
-	const getStatsSection = () => {
-		const setSizeValue = (value: number) => {
-			const copy = Utils.copy(monster);
-			copy.size.value = value;
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const setSizeMod = (value: '' | 'T' | 'S' | 'M' | 'L') => {
-			const copy = Utils.copy(monster);
-			copy.size.mod = value;
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const setSpeed = (value: number) => {
-			const copy = Utils.copy(monster);
-			copy.speed.value = value;
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const setMovementModes = (value: string) => {
-			const copy = Utils.copy(monster);
-			copy.speed.modes = [ value ];
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const setStamina = (value: number) => {
-			const copy = Utils.copy(monster);
-			copy.stamina = value;
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const setStability = (value: number) => {
-			const copy = Utils.copy(monster);
-			copy.stability = value;
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const setFreeStrikeDamage = (value: number) => {
-			const copy = Utils.copy(monster);
-			copy.freeStrikeDamage = value;
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const setFreeStrikeType = (value: DamageType) => {
-			const copy = Utils.copy(monster);
-			copy.freeStrikeType = value;
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const selectRandomSpeed = () => {
-			const values = getSimilarMonsters().map(m => m.speed.value);
-			setSpeed(Collections.draw(values));
-		};
-
-		const selectRandomStamina = () => {
-			const values = getSimilarMonsters().map(m => m.stamina);
-			setStamina(Collections.draw(values));
-		};
-
-		const selectRandomStability = () => {
-			const values = getSimilarMonsters().map(m => m.stability);
-			setStability(Collections.draw(values));
-		};
-
-		const selectRandomFreeStrikeDamage = () => {
-			const values = getSimilarMonsters().map(m => m.freeStrikeDamage);
-			setFreeStrikeDamage(Collections.draw(values));
-		};
-
-		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
 				<HeaderText>Size</HeaderText>
 				<NumberSpin min={1} value={monster.size.value} onChange={setSizeValue} />
 				{
@@ -381,71 +322,27 @@ export const MonsterEditPanel = (props: Props) => {
 						/>
 						: null
 				}
+			</Space>
+		);
+	};
+
+	const getStatsSection = () => {
+		return (
+			<Space orientation='vertical' style={{ width: '100%' }}>
+				<HeaderText>Encounter Value</HeaderText>
+				<NumberSpin min={1} value={monster.encounterValue} steps={[ 1, 10 ]} onChange={setEncounterValue} />
 				<HeaderText>Speed</HeaderText>
-				<NumberSpin min={0} value={monster.speed.value} onChange={setSpeed} />
+				<NumberSpin min={0} value={monster.speed.value} onChange={setSpeedValue} />
 				<TextInput
 					placeholder='Movement modes'
 					allowClear={true}
 					value={monster.speed.modes.join(', ')}
 					onChange={setMovementModes}
 				/>
-				{
-					getSimilarMonsters().length > 0 ?
-						<Expander
-							title='Similar Monsters'
-							extra={[
-								<Button key='random' type='text' title='Random' icon={<ThunderboltOutlined />} onClick={e => { e.stopPropagation(); selectRandomSpeed(); }} />
-							]}
-						>
-							<HeaderText>Speed</HeaderText>
-							<HistogramPanel
-								min={0}
-								values={getSimilarMonsters().map(m => m.speed.value)}
-								selected={monster.speed.value}
-								onSelect={setSpeed}
-							/>
-						</Expander>
-						: null
-				}
 				<HeaderText>Stamina</HeaderText>
 				<NumberSpin min={0} value={monster.stamina} steps={[ 1, 10 ]} onChange={setStamina} />
-				{
-					getSimilarMonsters().length > 0 ?
-						<Expander
-							title='Similar Monsters'
-							extra={[
-								<Button key='random' type='text' title='Random' icon={<ThunderboltOutlined />} onClick={e => { e.stopPropagation(); selectRandomStamina(); }} />
-							]}
-						>
-							<HeaderText>Stamina</HeaderText>
-							<HistogramPanel
-								values={getSimilarMonsters().map(m => m.stamina)}
-								selected={monster.stamina}
-								onSelect={setStamina}
-							/>
-						</Expander>
-						: null
-				}
 				<HeaderText>Stability</HeaderText>
 				<NumberSpin min={0} value={monster.stability} onChange={setStability} />
-				{
-					getSimilarMonsters().length > 0 ?
-						<Expander
-							title='Similar Monsters'
-							extra={[
-								<Button key='random' type='text' title='Random' icon={<ThunderboltOutlined />} onClick={e => { e.stopPropagation(); selectRandomStability(); }} />
-							]}
-						>
-							<HeaderText>Stability</HeaderText>
-							<HistogramPanel
-								min={0}
-								values={getSimilarMonsters().map(m => m.stability)}
-								selected={monster.stability}
-								onSelect={setStability}
-							/>
-						</Expander>
-						: null
-				}
 				<HeaderText>Free Strike</HeaderText>
 				<NumberSpin label='Damage' min={0} value={monster.freeStrikeDamage} steps={[ 1, 10 ]} onChange={setFreeStrikeDamage} />
 				<Select
@@ -456,43 +353,11 @@ export const MonsterEditPanel = (props: Props) => {
 					value={monster.freeStrikeType}
 					onChange={setFreeStrikeType}
 				/>
-				{
-					getSimilarMonsters().length > 0 ?
-						<Expander
-							title='Similar Monsters'
-							extra={[
-								<Button key='random' type='text' title='Random' icon={<ThunderboltOutlined />} onClick={e => { e.stopPropagation(); selectRandomFreeStrikeDamage(); }} />
-							]}
-						>
-							<HeaderText>Free Strike Damage</HeaderText>
-							<HistogramPanel
-								min={0}
-								values={getSimilarMonsters().map(m => m.freeStrikeDamage)}
-								selected={monster.freeStrikeDamage}
-								onSelect={setFreeStrikeDamage}
-							/>
-						</Expander>
-						: null
-				}
 			</Space>
 		);
 	};
 
 	const getCharacteristicsSection = () => {
-		const setCharacteristic = (ch: Characteristic, value: number) => {
-			const copy = Utils.copy(monster);
-			copy.characteristics
-				.filter(c => c.characteristic === ch)
-				.forEach(c => c.value = value);
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const selectRandom = (ch: Characteristic) => {
-			const values = getSimilarMonsters().map(m => MonsterLogic.getCharacteristic(m, ch));
-			setCharacteristic(ch, Collections.draw(values));
-		};
-
 		return (
 			<Space orientation='vertical' style={{ width: '100%' }}>
 				{
@@ -511,25 +376,6 @@ export const MonsterEditPanel = (props: Props) => {
 								value={MonsterLogic.getCharacteristic(monster, ch)}
 								onChange={value => setCharacteristic(ch, value)}
 							/>
-							{
-								getSimilarMonsters().length > 0 ?
-									<Expander
-										title='Similar Monsters'
-										extra={[
-											<Button key='random' type='text' title='Random' icon={<ThunderboltOutlined />} onClick={e => { e.stopPropagation(); selectRandom(ch); }} />
-										]}
-									>
-										<HeaderText>{ch}</HeaderText>
-										<HistogramPanel
-											min={-5}
-											max={5}
-											values={getSimilarMonsters().map(m => MonsterLogic.getCharacteristic(m, ch))}
-											selected={MonsterLogic.getCharacteristic(monster, ch)}
-											onSelect={value => setCharacteristic(ch, value)}
-										/>
-									</Expander>
-									: null
-							}
 						</Space>
 					))
 				}
@@ -538,149 +384,23 @@ export const MonsterEditPanel = (props: Props) => {
 	};
 
 	const getFeaturesSection = () => {
-		const addFeature = () => {
+		const onChange = (features: Feature[]) => {
 			const copy = Utils.copy(monster);
-			copy.features.push(FactoryLogic.feature.create({
-				id: Utils.guid(),
-				name: '',
-				description: ''
-			}));
+			copy.features = Utils.copy(features);
 			setMonster(copy);
 			props.onChange(copy);
 		};
-
-		const importFeature = (feature: Feature) => {
-			const featureCopy = Utils.copy(feature);
-			featureCopy.id = Utils.guid();
-
-			const copy = Utils.copy(monster);
-			copy.features.push(featureCopy);
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const changeFeature = (feature: Feature) => {
-			const copy = Utils.copy(monster);
-			const index = copy.features.findIndex(f => f.id === feature.id);
-			if (index !== -1) {
-				copy.features[index] = feature;
-			}
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const moveFeature = (feature: Feature, direction: 'up' | 'down') => {
-			const copy = Utils.copy(monster);
-			const index = copy.features.findIndex(f => f.id === feature.id);
-			copy.features = Collections.move(copy.features, index, direction);
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const deleteFeature = (feature: Feature) => {
-			const copy = Utils.copy(monster);
-			copy.features = copy.features.filter(f => f.id !== feature.id);
-			setMonster(copy);
-			props.onChange(copy);
-		};
-
-		const similar: { feature: Feature, count: number }[] = [];
-		getSimilarMonsters().forEach(m => {
-			m.features
-				.filter(f => FeatureLogic.getFeatureCategory(f) === selectedCategory)
-				.filter(f => !monster.features.some(mf => mf.name === f.name))
-				.forEach(f => {
-					const current = similar.find(sf => sf.feature.name === f.name);
-					if (current) {
-						current.count += 1;
-					} else {
-						similar.push({
-							feature: f,
-							count: 1
-						});
-					}
-				});
-		});
-		const sortedSimilar = Collections.sort(similar, s => s.feature.name);
 
 		return (
 			<Space orientation='vertical' style={{ width: '100%' }}>
-				<HeaderText
-					extra={
-						<Button type='text' icon={<PlusOutlined />} onClick={addFeature} />
-					}
-				>
-					Features
-				</HeaderText>
-				{
-					monster.features.map(f => (
-						<Expander
-							key={f.id}
-							title={f.name || 'Unnamed Feature'}
-							tags={[ FeatureLogic.getFeatureTag(f) ]}
-							extra={[
-								<Button key='up' type='text' title='Move Up' icon={<CaretUpOutlined />} onClick={e => { e.stopPropagation(); moveFeature(f, 'up'); }} />,
-								<Button key='down' type='text' title='Move Down' icon={<CaretDownOutlined />} onClick={e => { e.stopPropagation(); moveFeature(f, 'down'); }} />,
-								<DangerButton key='delete' mode='clear' onConfirm={e => { e.stopPropagation(); deleteFeature(f); }} />
-							]}
-						>
-							<FeatureEditPanel
-								feature={f}
-								sourcebooks={props.sourcebooks}
-								allowedTypes={[ FeatureType.Text, FeatureType.Ability, FeatureType.ConditionImmunity, FeatureType.DamageModifier ]}
-								options={props.options}
-								onChange={changeFeature}
-							/>
-						</Expander>
-					))
-				}
-				{
-					monster.features.length === 0 ?
-						<Empty />
-						: null
-				}
-				{getSimilarMonsters().length > 0 ? <Divider /> : null}
-				{
-					getSimilarMonsters().length > 0 ?
-						<Expander title='Similar Monsters'>
-							<HeaderText>Features from Similar Monsters</HeaderText>
-							<Space orientation='vertical' style={{ width: '100%' }}>
-								<Segmented
-									name='categories'
-									block={true}
-									options={
-										[ MonsterFeatureCategory.Text, MonsterFeatureCategory.DamageMod, MonsterFeatureCategory.Signature, MonsterFeatureCategory.Action, MonsterFeatureCategory.Maneuver, MonsterFeatureCategory.Trigger, MonsterFeatureCategory.Other ]
-											.map(tab => ({
-												value: tab,
-												label: <div className='category-selector'>{tab}</div>
-											}))
-									}
-									value={selectedCategory}
-									onChange={setSelectedCategory}
-								/>
-								{
-									sortedSimilar.map(s => (
-										<Expander
-											key={s.feature.id}
-											title={s.feature.name}
-											tags={[ FeatureLogic.getFeatureTag(s.feature) ]}
-											extra={[
-												<Button key='up' type='text' title='Import' icon={<ImportOutlined />} onClick={e => { e.stopPropagation(); importFeature(s.feature); }} />
-											]}
-										>
-											<FeaturePanel feature={s.feature} options={props.options} mode={PanelMode.Full} />
-										</Expander>
-									))
-								}
-								{
-									sortedSimilar.length === 0 ?
-										<Empty text='None in similar monsters' />
-										: null
-								}
-							</Space>
-						</Expander>
-						: null
-				}
+				<FeatureListEditPanel
+					title='Features'
+					features={monster.features}
+					allowedTypes={[ FeatureType.Text, FeatureType.Ability, FeatureType.ConditionImmunity, FeatureType.DamageModifier ]}
+					sourcebooks={props.sourcebooks}
+					options={props.options}
+					onChange={onChange}
+				/>
 			</Space>
 		);
 	};
@@ -809,39 +529,444 @@ export const MonsterEditPanel = (props: Props) => {
 	};
 
 	const getMonsterStatsSection = () => {
+		const similarMonsters = getSimilarMonsters();
 		const stats = MonsterLogic.getSuggestedStats(monster);
+
+		const getChart = (title: string, getValue: (m: Monster) => number, onChange: (value: number) => void) => {
+			const values = similarMonsters.map(getValue);
+			const selected = getValue(monster);
+
+			const min = Math.max(0, Math.min(...values, selected) - 3);
+			const max = Math.max(...values, selected) + 3;
+			const median = Math.round(Collections.median(values, x => x));
+
+			return (
+				<div style={{ width: '350px' }}>
+					<Flex align='center' justify='space-between'>
+						<b>{title}</b>
+						<Field label='Median' compact={true} value={median} />
+					</Flex>
+					<Divider />
+					{
+						values.length > 0 ?
+							<HistogramPanel min={min} max={max} values={values} selected={selected} onSelect={onChange} />
+							:
+							<Empty text='No similar monsters' />
+					}
+				</div>
+			);
+		};
 
 		return (
 			<div>
+				<Alert
+					type='info'
+					showIcon={false}
+					title={
+						<>
+							<div>This page shows typical values for a <b>{MonsterLogic.getMonsterDescription(monster)}</b> monster.</div>
+							<div>Click on any <InfoCircleOutlined /> to see explanations and actual values from similar monsters.</div>
+						</>
+					}
+				/>
 				<HeaderText>Stats</HeaderText>
-				<Flex align='center' justify='space-around'>
-					<Field orientation='vertical' label='Highest characteristic' value={stats.highestCharacteristic} />
-					<Field orientation='vertical' label='EV' value={stats.ev} />
-					<Field orientation='vertical' label='Stamina' value={stats.stamina} />
-					<Field orientation='vertical' label='Free strike damage' value={stats.freeStrikeDamage} />
+				<Flex align='center' justify='space-between'>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								EV
+								<Popover
+									trigger='click'
+									content={getChart('Encounter Value', m => m.encounterValue, setEncounterValue)}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={stats.ev}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								Speed
+								<Popover
+									trigger='click'
+									content={getChart('Speed', m => m.speed.value, setSpeedValue)}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value='5 - 6'
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								Stamina
+								<Popover
+									trigger='click'
+									content={getChart('Stamina', m => m.stamina, setStamina)}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={stats.stamina}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								Stability
+								<Popover
+									trigger='click'
+									content={getChart('Stability', m => m.stability, setStability)}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value='0 - 1'
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								Free Strike
+								<Popover
+									trigger='click'
+									content={getChart('Free Strike Damage', m => m.freeStrikeDamage, setFreeStrikeDamage)}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={stats.freeStrikeDamage}
+					/>
+				</Flex>
+				<HeaderText>Characteristics</HeaderText>
+				<Flex align='center' justify='space-between'>
+					<Field
+						orientation='vertical'
+						label='Highest'
+						value={stats.highestCharacteristic}
+					/>
+					<Divider orientation='vertical' />
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								M
+								<Popover
+									trigger='click'
+									content={getChart('Might', m => MonsterLogic.getCharacteristic(m, Characteristic.Might), value => setCharacteristic(Characteristic.Might, value))}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={stats.characteristics.m}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								A
+								<Popover
+									trigger='click'
+									content={getChart('Agility', m => MonsterLogic.getCharacteristic(m, Characteristic.Agility), value => setCharacteristic(Characteristic.Agility, value))}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={stats.characteristics.a}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								R
+								<Popover
+									trigger='click'
+									content={getChart('Reason', m => MonsterLogic.getCharacteristic(m, Characteristic.Reason), value => setCharacteristic(Characteristic.Reason, value))}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={stats.characteristics.r}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								I
+								<Popover
+									trigger='click'
+									content={getChart('Intuition', m => MonsterLogic.getCharacteristic(m, Characteristic.Intuition), value => setCharacteristic(Characteristic.Intuition, value))}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={stats.characteristics.i}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								P
+								<Popover
+									trigger='click'
+									content={getChart('Presence', m => MonsterLogic.getCharacteristic(m, Characteristic.Presence), value => setCharacteristic(Characteristic.Presence, value))}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={stats.characteristics.p}
+					/>
+				</Flex>
+				<HeaderText>Number of Abilities</HeaderText>
+				<Flex align='center' justify='space-between'>
+					<Field
+						orientation='vertical'
+						label='Main (sig.)'
+						value={1}
+					/>
+					<Field
+						orientation='vertical'
+						label='Main (other)'
+						value={stats.actions.main}
+					/>
+					<Field
+						orientation='vertical'
+						label='Maneuver'
+						value={stats.actions.maneuver}
+					/>
+					<Field
+						orientation='vertical'
+						label='Triggered'
+						value={stats.actions.triggered}
+					/>
+					<Field
+						orientation='vertical'
+						label='Villain'
+						value={stats.actions.villain}
+					/>
 				</Flex>
 				<HeaderText>Ability Damage</HeaderText>
-				<Flex align='center' justify='space-around'>
-					<Field orientation='vertical' label='Fewer targets' value={`${stats.damageMinus1.tier1} / ${stats.damageMinus1.tier2} / ${stats.damageMinus1.tier3}`} />
-					<Field highlight={true} orientation='vertical' label='Typical targets' value={`${stats.damage.tier1} / ${stats.damage.tier2} / ${stats.damage.tier3}`} />
-					<Field orientation='vertical' label='1 extra target' value={`${stats.damagePlus1.tier1} / ${stats.damagePlus1.tier2} / ${stats.damagePlus1.tier3}`} />
-					<Field orientation='vertical' label='2+ extra targets' value={`${stats.damagePlus2.tier1} / ${stats.damagePlus2.tier2} / ${stats.damagePlus2.tier3}`} />
+				<Flex align='center' justify='space-between'>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								Typical
+								<Popover
+									trigger='click'
+									content={
+										<div>
+											<p>Ability affects one target (two targets for elite / leader / solo)</p>
+											<Divider />
+											<p>Common riders:</p>
+											<ul>
+												<li>Forced movement: push / pull / slide 2</li>
+												<li>Grabbed / prone at tier 2 and 3</li>
+												<li>Bleeding / slowed</li>
+											</ul>
+										</div>
+									}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={`${stats.damage.tier1} / ${stats.damage.tier2} / ${stats.damage.tier3}`}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								Light
+								<Popover
+									trigger='click'
+									content={
+										<div>
+											<p>Ability affects multiple extra targets / has an area effect / has a heavy rider</p>
+											<Divider />
+											<p>Common riders:</p>
+											<ul>
+												<div>Dazed / frightened / restrained</div>
+												<div>Forced movement, plus another rider</div>
+											</ul>
+										</div>
+									}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={`${stats.damagePlus2.tier1} / ${stats.damagePlus2.tier2} / ${stats.damagePlus2.tier3}`}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								Moderate
+								<Popover
+									trigger='click'
+									content={
+										<div>
+											<p>Ability affects one extra target / has a typical rider</p>
+											<Divider />
+											<p>Common riders:</p>
+											<ul>
+												<li>Slowed / weakened (save ends)</li>
+												<li>Dazed on tier 3</li>
+												<li>Grabbed / restrained at tier 2 and 3</li>
+												<li>Forced movement, plus a condition</li>
+											</ul>
+										</div>
+									}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={`${stats.damagePlus1.tier1} / ${stats.damagePlus1.tier2} / ${stats.damagePlus1.tier3}`}
+					/>
+					<Field
+						orientation='vertical'
+						label={
+							<Space>
+								Heavy
+								<Popover
+									trigger='click'
+									content={
+										<div>
+											<p>Ability affects fewer targets / has a light (or no) rider</p>
+											<Divider />
+											<p>Common riders:</p>
+											<ul>
+												<li>Forced movement: push/pull/slide 1</li>
+												<li>Prone at tier 3</li>
+											</ul>
+										</div>
+									}
+								>
+									<InfoCircleOutlined />
+								</Popover>
+							</Space>
+						}
+						value={`${stats.damageMinus1.tier1} / ${stats.damageMinus1.tier2} / ${stats.damageMinus1.tier3}`}
+					/>
 				</Flex>
 			</div>
+		);
+	};
+
+	const getExampleAbilitiesSection = () => {
+		const similar: { feature: Feature, count: number }[] = [];
+		getSimilarMonsters().forEach(m => {
+			m.features
+				.filter(f => FeatureLogic.getFeatureCategory(f) === selectedCategory)
+				.filter(f => !monster.features.some(mf => mf.name === f.name))
+				.forEach(f => {
+					const current = similar.find(sf => sf.feature.name === f.name);
+					if (current) {
+						current.count += 1;
+					} else {
+						similar.push({
+							feature: f,
+							count: 1
+						});
+					}
+				});
+		});
+		const sortedSimilar = Collections.sort(similar, s => s.feature.name);
+
+		const importFeature = (feature: Feature) => {
+			const featureCopy = Utils.copy(feature);
+			featureCopy.id = Utils.guid();
+
+			const copy = Utils.copy(monster);
+			copy.features.push(featureCopy);
+			setMonster(copy);
+			props.onChange(copy);
+		};
+
+		return (
+			<Space orientation='vertical' style={{ width: '100%' }}>
+				<Segmented
+					block={true}
+					options={[
+						{ value: MonsterFeatureCategory.Signature, label: 'Signature' },
+						{ value: MonsterFeatureCategory.Action, label: 'Main' },
+						{ value: MonsterFeatureCategory.Maneuver, label: 'Maneuver' },
+						{ value: MonsterFeatureCategory.Trigger, label: 'Triggered' },
+						{ value: MonsterFeatureCategory.Villain, label: 'Villain' }
+					]}
+					value={selectedCategory}
+					onChange={setSelectedCategory}
+				/>
+				{
+					sortedSimilar.map(s => (
+						<Expander
+							key={s.feature.id}
+							title={s.feature.name}
+							tags={[ FeatureLogic.getFeatureTag(s.feature) ]}
+							extra={[
+								<Button key='up' type='text' title='Import' icon={<ImportOutlined />} onClick={e => { e.stopPropagation(); importFeature(s.feature); }} />
+							]}
+						>
+							<FeaturePanel feature={s.feature} options={props.options} mode={PanelMode.Full} />
+						</Expander>
+					))
+				}
+				{
+					sortedSimilar.length === 0 ?
+						<Empty text='None in similar monsters' />
+						: null
+				}
+			</Space>
 		);
 	};
 
 	const getSimilarMonstersSection = () => {
 		const similarMonsters = getSimilarMonsters();
 
+		const genesplice = () => {
+			const copy = Utils.copy(monster);
+			MonsterLogic.genesplice(copy, similarMonsters);
+			setMonster(copy);
+			props.onChange(copy);
+		};
+
 		return (
 			<Space orientation='vertical' style={{ width: '100%' }}>
-				<Expander title='Modify This List'>
-					<Space orientation='vertical' style={{ paddingTop: '15px', width: '100%' }}>
-						<Button block={true} onClick={() => setDrawerOpen(true)}>Add a Monster</Button>
-						<Button block={true} disabled={hiddenMonsterIDs.length === 0} onClick={() => setHiddenMonsterIDs([])}>Restore Hidden Monsters</Button>
-					</Space>
-				</Expander>
+				<HeaderText
+					extra={
+						<Popover
+							trigger='click'
+							content={
+								<Space orientation='vertical'>
+									<Button block={true} onClick={() => setDrawerOpen(true)}>Add a Monster</Button>
+									<Button block={true} disabled={hiddenMonsterIDs.length === 0} onClick={() => setHiddenMonsterIDs([])}>Restore Hidden Monsters</Button>
+									<Divider />
+									<Button block={true} disabled={getSimilarMonsters().length < 2} icon={<ThunderboltOutlined />} onClick={genesplice}>Genesplice</Button>
+								</Space>
+							}
+						>
+							<Button type='text' icon={<ToolOutlined />} />
+						</Popover>
+					}
+				>
+					Similar Monsters
+				</HeaderText>
 				{
 					similarMonsters.map(m => {
 						const monsterGroup = SourcebookLogic.getMonsterGroup(props.sourcebooks, m.id);
@@ -870,6 +995,7 @@ export const MonsterEditPanel = (props: Props) => {
 										Hide
 									</Button>
 								}
+								onSelect={props.onSelectMonster ? () => props.onSelectMonster!(m, monsterGroup) : undefined}
 							>
 								<MonsterPanel
 									monster={m}
@@ -902,13 +1028,6 @@ export const MonsterEditPanel = (props: Props) => {
 				</Drawer>
 			</Space>
 		);
-	};
-
-	const genesplice = () => {
-		const copy = Utils.copy(monster);
-		MonsterLogic.genesplice(copy, getSimilarMonsters());
-		setMonster(copy);
-		props.onChange(copy);
 	};
 
 	const tabs = [
@@ -959,14 +1078,7 @@ export const MonsterEditPanel = (props: Props) => {
 		<ErrorBoundary>
 			<div className='monster-edit-panel'>
 				<div className='monster-workspace-column'>
-					<Tabs
-						items={tabs}
-						tabBarExtraContent={
-							getSimilarMonsters().length > 1 ?
-								<Button type='text' title='Genesplice' icon={<ThunderboltOutlined />} onClick={genesplice} />
-								: null
-						}
-					/>
+					<Tabs items={tabs} />
 				</div>
 				{
 					props.mode === PanelMode.Full ?
@@ -994,6 +1106,11 @@ export const MonsterEditPanel = (props: Props) => {
 									},
 									{
 										key: '3',
+										label: 'Example Abilities',
+										children: getExampleAbilitiesSection()
+									},
+									{
+										key: '4',
 										label: 'Similar Monsters',
 										children: getSimilarMonstersSection()
 									}

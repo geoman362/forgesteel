@@ -1044,7 +1044,6 @@ export class FactoryLogic {
 			xpPerLevel: 16,
 			// Hero: Modern Sheet
 			singlePage: false,
-			separateInventoryFeatures: false,
 			showSkillsInGroups: false,
 			showSources: true,
 			compactView: false,
@@ -1081,10 +1080,12 @@ export class FactoryLogic {
 
 	static createConnectionSettings = (): ConnectionSettings => {
 		return {
-			useWarehouse: false,
+			useManualWarehouse: false,
 			warehouseHost: '',
 			warehouseToken: '',
-			patreonConnected: false
+			patreonConnected: false,
+			usePatreonWarehouse: false,
+			patreonConnections: []
 		};
 	};
 

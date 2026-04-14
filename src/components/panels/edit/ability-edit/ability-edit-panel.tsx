@@ -14,6 +14,7 @@ import { FactoryLogic } from '@/logic/factory-logic';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { MarkdownEditor } from '@/components/controls/markdown/markdown';
 import { MultiLine } from '@/components/controls/multi-line/multi-line';
+import { NameDescEditPanel } from '@/components/panels/edit/name-desc-edit/name-desc-edit-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { TextInput } from '@/components/controls/text-input/text-input';
 import { Toggle } from '@/components/controls/toggle/toggle';
@@ -31,37 +32,23 @@ export const AbilityEditPanel = (props: Props) => {
 	const [ ability, setAbility ] = useState<Ability>(props.ability);
 
 	const getAbilityPage = () => {
-		const setName = (value: string) => {
+		const onChange = (name: string, desc: string) => {
 			const copy = Utils.copy(ability);
-			copy.name = value;
-			setAbility(copy);
-			props.onChange(copy);
-		};
-
-		const setDescription = (value: string) => {
-			const copy = Utils.copy(ability);
-			copy.description = value;
+			copy.name = name;
+			copy.description = desc;
 			setAbility(copy);
 			props.onChange(copy);
 		};
 
 		return (
-			<div>
-				<HeaderText>Name</HeaderText>
-				<TextInput
-					status={ability.name === '' ? 'warning' : ''}
-					placeholder='Name'
-					allowClear={true}
-					value={ability.name}
-					onChange={setName}
-				/>
-				<HeaderText>Description</HeaderText>
-				<MarkdownEditor value={ability.description} onChange={setDescription} />
-			</div>
+			<NameDescEditPanel
+				element={ability}
+				onChange={onChange}
+			/>
 		);
 	};
 
-	const getUsagePage = () => {
+	const getTypePage = () => {
 		const setTypeUsage = (value: AbilityUsage) => {
 			const copy = Utils.copy(ability);
 			copy.type.usage = value;
@@ -111,6 +98,87 @@ export const AbilityEditPanel = (props: Props) => {
 			props.onChange(copy);
 		};
 
+		const setCost = (value: number | 'signature') => {
+			const copy = Utils.copy(ability);
+			copy.cost = value;
+			setAbility(copy);
+			props.onChange(copy);
+		};
+
+		const setRepeatable = (value: boolean) => {
+			const copy = Utils.copy(ability);
+			copy.repeatable = value;
+			setAbility(copy);
+			props.onChange(copy);
+		};
+
+		return (
+			<div>
+				<HeaderText>Ability Type</HeaderText>
+				<Space orientation='vertical' style={{ width: '100%' }}>
+					<Select
+						style={{ width: '100%' }}
+						placeholder='Select usage type'
+						options={[ AbilityUsage.MainAction, AbilityUsage.Maneuver, AbilityUsage.Move, AbilityUsage.Trigger, AbilityUsage.VillainAction, AbilityUsage.ChampionAction, AbilityUsage.NoAction, AbilityUsage.Other ].map(option => ({ value: option }))}
+						optionRender={option => <div className='ds-text'>{option.data.value}</div>}
+						value={ability.type.usage}
+						onChange={setTypeUsage}
+					/>
+					{
+						ability.type.usage === AbilityUsage.Trigger ?
+							<TextInput
+								status={ability.type.trigger === '' ? 'warning' : ''}
+								placeholder='Trigger'
+								allowClear={true}
+								value={ability.type.trigger}
+								onChange={setTypeTrigger}
+							/>
+							: null
+					}
+					{
+						ability.type.usage === AbilityUsage.Other ?
+							<TextInput
+								status={ability.type.time === '' ? 'warning' : ''}
+								placeholder='Other'
+								allowClear={true}
+								value={ability.type.time}
+								onChange={setTypeTime}
+							/>
+							: null
+					}
+					{
+						ability.type.usage === AbilityUsage.VillainAction ?
+							<NumberSpin label='Villain Action Order' min={1} max={3} value={ability.type.order || 1} onChange={setTypeOrder} />
+							: null
+					}
+					<TextInput
+						placeholder='Qualifiers'
+						allowClear={true}
+						value={ability.type.qualifiers.join(', ')}
+						onChange={setTypeQualifiers}
+					/>
+					<Toggle label='Signature' value={ability.cost === 'signature'} onChange={value => setCost(value ? 'signature' : 0)} />
+					{
+						(ability.type.usage === AbilityUsage.MainAction) || (ability.type.usage === AbilityUsage.Maneuver) || (ability.type.usage === AbilityUsage.Trigger) ?
+							<Toggle label='Free' value={ability.type.free} onChange={setTypeFree} />
+							: null
+					}
+					<Toggle label='Can be used as a free strike' value={ability.type.freeStrike} onChange={setTypeFreeStrike} />
+				</Space>
+				{
+					ability.cost !== 'signature' ?
+						<Space orientation='vertical' style={{ width: '100%' }}>
+							<HeaderText>Cost</HeaderText>
+							<NumberSpin min={0} value={ability.cost} suffix={ability.repeatable ? '+' : undefined} onChange={setCost} />
+							<Toggle label='Repeatable' value={ability.repeatable} onChange={setRepeatable} />
+						</Space>
+						: null
+				}
+			</div>
+		);
+	};
+
+	const getUsagePage = () => {
 		const setKeywords = (value: string[]) => {
 			const copy = Utils.copy(ability);
 			copy.keywords = value;
@@ -236,72 +304,8 @@ export const AbilityEditPanel = (props: Props) => {
 			props.onChange(copy);
 		};
 
-		const setCost = (value: number | 'signature') => {
-			const copy = Utils.copy(ability);
-			copy.cost = value;
-			setAbility(copy);
-			props.onChange(copy);
-		};
-
-		const setRepeatable = (value: boolean) => {
-			const copy = Utils.copy(ability);
-			copy.repeatable = value;
-			setAbility(copy);
-			props.onChange(copy);
-		};
-
 		return (
 			<div>
-				<HeaderText>Type</HeaderText>
-				<Space orientation='vertical' style={{ width: '100%' }}>
-					<Select
-						style={{ width: '100%' }}
-						placeholder='Select usage type'
-						options={[ AbilityUsage.MainAction, AbilityUsage.Maneuver, AbilityUsage.Move, AbilityUsage.Trigger, AbilityUsage.VillainAction, AbilityUsage.ChampionAction, AbilityUsage.NoAction, AbilityUsage.Other ].map(option => ({ value: option }))}
-						optionRender={option => <div className='ds-text'>{option.data.value}</div>}
-						value={ability.type.usage}
-						onChange={setTypeUsage}
-					/>
-					{
-						ability.type.usage === AbilityUsage.Trigger ?
-							<TextInput
-								status={ability.type.trigger === '' ? 'warning' : ''}
-								placeholder='Trigger'
-								allowClear={true}
-								value={ability.type.trigger}
-								onChange={setTypeTrigger}
-							/>
-							: null
-					}
-					{
-						ability.type.usage === AbilityUsage.Other ?
-							<TextInput
-								status={ability.type.time === '' ? 'warning' : ''}
-								placeholder='Other'
-								allowClear={true}
-								value={ability.type.time}
-								onChange={setTypeTime}
-							/>
-							: null
-					}
-					{
-						ability.type.usage === AbilityUsage.VillainAction ?
-							<NumberSpin label='Villain Action Order' min={1} max={3} value={ability.type.order || 1} onChange={setTypeOrder} />
-							: null
-					}
-					<TextInput
-						placeholder='Qualifiers'
-						allowClear={true}
-						value={ability.type.qualifiers.join(', ')}
-						onChange={setTypeQualifiers}
-					/>
-					{
-						(ability.type.usage === AbilityUsage.MainAction) || (ability.type.usage === AbilityUsage.Maneuver) || (ability.type.usage === AbilityUsage.Trigger) ?
-							<Toggle label='Free' value={ability.type.free} onChange={setTypeFree} />
-							: null
-					}
-					<Toggle label='Can be used as a free strike' value={ability.type.freeStrike} onChange={setTypeFreeStrike} />
-				</Space>
 				<HeaderText>Keywords</HeaderText>
 				<Select
 					style={{ width: '100%' }}
@@ -424,18 +428,6 @@ export const AbilityEditPanel = (props: Props) => {
 					value={ability.target}
 					onChange={setTarget}
 				/>
-				<HeaderText>Signature</HeaderText>
-				<Toggle label='Signature' value={ability.cost === 'signature'} onChange={value => setCost(value ? 'signature' : 0)} />
-				{
-					ability.cost !== 'signature' ?
-						<>
-							<HeaderText>Cost</HeaderText>
-							<NumberSpin min={0} value={ability.cost} onChange={setCost} />
-							<HeaderText>Repeatable</HeaderText>
-							<Toggle label='Repeatable' value={ability.repeatable} onChange={setRepeatable} />
-						</>
-						: null
-				}
 			</div>
 		);
 	};
@@ -493,10 +485,10 @@ export const AbilityEditPanel = (props: Props) => {
 							trigger='click'
 							content={
 								<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-									<Button type='text' onClick={() => addSection('text')}>Add Text</Button>
-									<Button type='text' onClick={() => addSection('field')}>Add a Field</Button>
-									<Button type='text' onClick={() => addSection('roll')}>Add a Roll</Button>
-									<Button type='text' onClick={() => addSection('package')}>Add a Package</Button>
+									<Button type='text' onClick={() => addSection('text')}>Add a Text section</Button>
+									<Button type='text' onClick={() => addSection('field')}>Add a Field section</Button>
+									<Button type='text' onClick={() => addSection('roll')}>Add a Power Roll section</Button>
+									<Button type='text' onClick={() => addSection('package')}>Add a Package section</Button>
 								</div>
 							}
 						>
@@ -516,7 +508,7 @@ export const AbilityEditPanel = (props: Props) => {
 									case 'field':
 										return section.name || 'Field';
 									case 'roll':
-										return 'Roll';
+										return 'Power Roll';
 									case 'package':
 										return `Package: ${section.tag || '(no tag set)'}`;
 								}
@@ -585,7 +577,7 @@ export const AbilityEditPanel = (props: Props) => {
 													onChange={setFieldSectionEffect}
 												/>
 												<HeaderText>Cost</HeaderText>
-												<NumberSpin min={0} value={section.value} onChange={setFieldSectionValue} />
+												<NumberSpin min={0} value={section.value} suffix={ability.repeatable ? '+' : undefined} onChange={setFieldSectionValue} />
 												<Toggle label='Repeatable' value={section.repeatable} onChange={setFieldSectionRepeatable} />
 											</Space>
 										);
@@ -736,11 +728,16 @@ export const AbilityEditPanel = (props: Props) => {
 						},
 						{
 							key: '2',
+							label: 'Type',
+							children: getTypePage()
+						},
+						{
+							key: '3',
 							label: 'Usage',
 							children: getUsagePage()
 						},
 						{
-							key: '3',
+							key: '4',
 							label: 'Content',
 							children: getContentPage()
 						}

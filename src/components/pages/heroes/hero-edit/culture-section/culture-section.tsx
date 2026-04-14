@@ -1,7 +1,7 @@
 import { Button, Divider, Drawer, Flex, Space } from 'antd';
-import { CloseOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { CultureData, EnvironmentData, OrganizationData, UpbringingData } from '@/data/culture-data';
 import { ReactNode, useState } from 'react';
+import { CloseOutlined } from '@ant-design/icons';
 import { Culture } from '@/models/culture';
 import { CulturePanel } from '@/components/panels/elements/culture-panel/culture-panel';
 import { CultureType } from '@/enums/culture-type';
@@ -16,7 +16,7 @@ import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { Markdown } from '@/components/controls/markdown/markdown';
-import { NameGenerator } from '@/utils/name-generator';
+import { NameSuggestions } from '@/components/panels/name-suggestions/name-suggestions';
 import { Options } from '@/models/options';
 import { PanelMode } from '@/enums/panel-mode';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
@@ -57,8 +57,10 @@ export const CultureSection = (props: CultureSectionProps) => {
 
 	const setName = (value: string) => {
 		const copy = Utils.copy(props.hero.culture)!;
-		copy.name = value;
-		props.selectCulture(copy);
+		if (value !== copy.name) {
+			copy.name = value;
+			props.selectCulture(copy);
+		}
 	};
 
 	const cultures = [ CultureData.bespoke, ...SourcebookLogic.getCultures(props.sourcebooks, true) ]
@@ -109,7 +111,7 @@ export const CultureSection = (props: CultureSectionProps) => {
 							value={props.hero.culture.name}
 							onChange={setName}
 						/>
-						<Button icon={<ThunderboltOutlined />} onClick={() => setName(NameGenerator.generateName())} />
+						<NameSuggestions onSelect={setName} />
 					</Space.Compact>
 					<Divider />
 					<div className='ds-text'>Choose your Environment, Organization, and Upbringing.</div>
@@ -265,6 +267,7 @@ export const CultureSection = (props: CultureSectionProps) => {
 			<Drawer open={showEnvironment} onClose={() => setShowEnvironment(false)} closeIcon={null} size={500}>
 				<FeatureSelectModal
 					features={EnvironmentData.getEnvironments().map(f => ({ feature: f, value: 1 }))}
+					sourcebooks={props.sourcebooks}
 					options={props.options}
 					onSelect={f => {
 						setShowEnvironment(false);
@@ -276,6 +279,7 @@ export const CultureSection = (props: CultureSectionProps) => {
 			<Drawer open={showOrganization} onClose={() => setShowOrganization(false)} closeIcon={null} size={500}>
 				<FeatureSelectModal
 					features={OrganizationData.getOrganizations().map(f => ({ feature: f, value: 1 }))}
+					sourcebooks={props.sourcebooks}
 					options={props.options}
 					onSelect={f => {
 						setShowOrganization(false);
@@ -287,6 +291,7 @@ export const CultureSection = (props: CultureSectionProps) => {
 			<Drawer open={showUpbringing} onClose={() => setShowUpbringing(false)} closeIcon={null} size={500}>
 				<FeatureSelectModal
 					features={UpbringingData.getUpbringings().map(f => ({ feature: f, value: 1 }))}
+					sourcebooks={props.sourcebooks}
 					options={props.options}
 					onSelect={f => {
 						setShowUpbringing(false);

@@ -1,5 +1,5 @@
 import { Button, Segmented, Select, Space, Tabs } from 'antd';
-import { CaretDownOutlined, CaretUpOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { CaretDownOutlined, CaretUpOutlined, PlusOutlined } from '@ant-design/icons';
 import { FeatureAbility, FeatureText } from '@/models/feature';
 import { Collections } from '@/utils/collections';
 import { DamageModifierType } from '@/enums/damage-modifier-type';
@@ -17,7 +17,7 @@ import { HeaderText } from '@/components/controls/header-text/header-text';
 import { MarkdownEditor } from '@/components/controls/markdown/markdown';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterRoleType } from '@/enums/monster-role-type';
-import { NameGenerator } from '@/utils/name-generator';
+import { NameDescEditPanel } from '@/components/panels/edit/name-desc-edit/name-desc-edit-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Options } from '@/models/options';
 import { PanelMode } from '@/enums/panel-mode';
@@ -44,38 +44,27 @@ interface Props {
 
 export const TerrainEditPanel = (props: Props) => {
 	const [ terrain, setTerrain ] = useState<Terrain>(props.terrain);
+	const [ revision, setRevision ] = useState<number>(0);
+
+	const updateTerrain = (value: Terrain) => {
+		setTerrain(value);
+		setRevision(revision + 1);
+		props.onChange(value);
+	};
 
 	const getNameAndDescriptionSection = () => {
-		const setName = (value: string) => {
+		const onChange = (name: string, desc: string) => {
 			const copy = Utils.copy(terrain);
-			copy.name = value;
-			setTerrain(copy);
-			props.onChange(copy);
-		};
-
-		const setDescription = (value: string) => {
-			const copy = Utils.copy(terrain);
-			copy.description = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			copy.name = name;
+			copy.description = desc;
+			updateTerrain(copy);
 		};
 
 		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<HeaderText>Name</HeaderText>
-				<Space.Compact style={{ width: '100%' }}>
-					<TextInput
-						status={terrain.name === '' ? 'warning' : ''}
-						placeholder='Name'
-						allowClear={true}
-						value={terrain.name}
-						onChange={setName}
-					/>
-					<Button icon={<ThunderboltOutlined />} onClick={() => setName(NameGenerator.generateName())} />
-				</Space.Compact>
-				<HeaderText>Description</HeaderText>
-				<MarkdownEditor value={terrain.description} onChange={setDescription} />
-			</Space>
+			<NameDescEditPanel
+				element={terrain}
+				onChange={onChange}
+			/>
 		);
 	};
 
@@ -83,72 +72,62 @@ export const TerrainEditPanel = (props: Props) => {
 		const setCategory = (value: TerrainCategory) => {
 			const copy = Utils.copy(terrain);
 			copy.category = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setLevel = (value: number) => {
 			const copy = Utils.copy(terrain);
 			copy.level = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setRoleType = (value: MonsterRoleType) => {
 			const copy = Utils.copy(terrain);
 			copy.role.type = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setTerrainRoleType = (value: TerrainRoleType) => {
 			const copy = Utils.copy(terrain);
 			copy.role.terrainType = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setEncounterValue = (value: number) => {
 			const copy = Utils.copy(terrain);
 			copy.encounterValue = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setArea = (value: string) => {
 			const copy = Utils.copy(terrain);
 			copy.area = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setStaminaBase = (value: number) => {
 			const copy = Utils.copy(terrain);
 			copy.stamina.base = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setStaminaPerSquare = (value: number) => {
 			const copy = Utils.copy(terrain);
 			copy.stamina.perSquare = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setSize = (value: string | Size) => {
 			const copy = Utils.copy(terrain);
 			copy.size = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setSizeValue = (value: number) => {
 			const copy = Utils.copy(terrain);
 			if (typeof copy.size !== 'string') {
 				copy.size.value = value;
-				setTerrain(copy);
-				props.onChange(copy);
+				updateTerrain(copy);
 			}
 		};
 
@@ -156,8 +135,7 @@ export const TerrainEditPanel = (props: Props) => {
 			const copy = Utils.copy(terrain);
 			if (typeof copy.size !== 'string') {
 				copy.size.mod = value;
-				setTerrain(copy);
-				props.onChange(copy);
+				updateTerrain(copy);
 			}
 		};
 
@@ -250,43 +228,37 @@ export const TerrainEditPanel = (props: Props) => {
 				modifierType: DamageModifierType.Immunity,
 				value: 0
 			}));
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setModifierType = (index: number, value: DamageModifierType) => {
 			const copy = Utils.copy(terrain);
 			copy.damageMods[index].type = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setDamageType = (index: number, value: DamageType) => {
 			const copy = Utils.copy(terrain);
 			copy.damageMods[index].damageType = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setValue = (index: number, value: number) => {
 			const copy = Utils.copy(terrain);
 			copy.damageMods[index].value = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const moveDamageMod = (index: number, direction: 'up' | 'down') => {
 			const copy = Utils.copy(terrain);
 			copy.damageMods = Collections.move(copy.damageMods, index, direction);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const deleteDamageMod = (index: number) => {
 			const copy = Utils.copy(terrain);
 			copy.damageMods.splice(index, 1);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		return (
@@ -353,22 +325,19 @@ export const TerrainEditPanel = (props: Props) => {
 					})
 				]
 			});
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const moveSection = (sectionIndex: number, direction: 'up' | 'down') => {
 			const copy = Utils.copy(terrain);
 			copy.sections = Collections.move(copy.sections, sectionIndex, direction);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const deleteSection = (sectionIndex: number) => {
 			const copy = Utils.copy(terrain);
 			copy.sections.splice(sectionIndex, 1);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const addSectionContent = (sectionIndex: number) => {
@@ -380,29 +349,25 @@ export const TerrainEditPanel = (props: Props) => {
 					description: ''
 				})
 			);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const moveSectionContent = (sectionIndex: number, contentIndex: number, direction: 'up' | 'down') => {
 			const copy = Utils.copy(terrain);
 			copy.sections[sectionIndex].content = Collections.move(copy.sections[sectionIndex].content, contentIndex, direction);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const deleteSectionContent = (sectionIndex: number, contentIndex: number) => {
 			const copy = Utils.copy(terrain);
 			copy.sections[sectionIndex].content.splice(contentIndex, 1);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setSectionContentFeature = (sectionIndex: number, contentIndex: number, value: FeatureText | FeatureAbility) => {
 			const copy = Utils.copy(terrain);
 			copy.sections[sectionIndex].content[contentIndex] = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		return (
@@ -476,43 +441,37 @@ export const TerrainEditPanel = (props: Props) => {
 				text: '',
 				sections: []
 			});
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const moveUpgrade = (upgradeIndex: number, direction: 'up' | 'down') => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades = Collections.move(copy.upgrades, upgradeIndex, direction);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const deleteUpgrade = (upgradeIndex: number) => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades.splice(upgradeIndex, 1);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setUpgradeLabel = (upgradeIndex: number, value: string) => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades[upgradeIndex].label = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setUpgradeText = (upgradeIndex: number, value: string) => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades[upgradeIndex].text = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setUpgradeCost = (upgradeIndex: number, value: number) => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades[upgradeIndex].cost = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const addUpgradeSection = (upgradeIndex: number) => {
@@ -527,22 +486,19 @@ export const TerrainEditPanel = (props: Props) => {
 					})
 				]
 			});
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const moveUpgradeSection = (upgradeIndex: number, sectionIndex: number, direction: 'up' | 'down') => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades[upgradeIndex].sections = Collections.move(copy.sections, sectionIndex, direction);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const deleteUpgradeSection = (upgradeIndex: number, sectionIndex: number) => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades[upgradeIndex].sections.splice(sectionIndex, 1);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const addUpgradeSectionContent = (upgradeIndex: number, sectionIndex: number) => {
@@ -554,29 +510,25 @@ export const TerrainEditPanel = (props: Props) => {
 					description: ''
 				})
 			);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const moveUpgradeSectionContent = (upgradeIndex: number, sectionIndex: number, contentIndex: number, direction: 'up' | 'down') => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades[upgradeIndex].sections[sectionIndex].content = Collections.move(copy.sections[sectionIndex].content, contentIndex, direction);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const deleteUpgradeSectionContent = (upgradeIndex: number, sectionIndex: number, contentIndex: number) => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades[upgradeIndex].sections[sectionIndex].content.splice(contentIndex, 1);
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		const setUpgradeSectionContentFeature = (upgradeIndex: number, sectionIndex: number, contentIndex: number, value: FeatureText | FeatureAbility) => {
 			const copy = Utils.copy(terrain);
 			copy.upgrades[upgradeIndex].sections[sectionIndex].content[contentIndex] = value;
-			setTerrain(copy);
-			props.onChange(copy);
+			updateTerrain(copy);
 		};
 
 		return (
@@ -731,6 +683,7 @@ export const TerrainEditPanel = (props: Props) => {
 										children: (
 											<SelectablePanel>
 												<TerrainPanel
+													key={revision}
 													terrain={terrain}
 													sourcebooks={props.sourcebooks}
 													mode={PanelMode.Full}

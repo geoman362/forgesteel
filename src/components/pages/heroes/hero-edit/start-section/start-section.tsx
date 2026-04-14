@@ -5,6 +5,7 @@ import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
+import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { SourcebookUpdateLogic } from '@/logic/update/sourcebook-update-logic';
 import { Toggle } from '@/components/controls/toggle/toggle';
@@ -62,13 +63,14 @@ export const StartSection = (props: Props) => {
 					This hero can use content from the following sourcebooks:
 				</div>
 				{
-					[ SourcebookType.Official, SourcebookType.ThirdParty, SourcebookType.Community, SourcebookType.Homebrew ].map(type => (
-						<div key={type} className='sourcebook-type-section'>
-							<HeaderText level={3}>{type} Sourcebooks</HeaderText>
-							{
-								props.sourcebooks
-									.filter(sb => sb.type === type)
-									.map(sb => (
+					[ SourcebookType.Official, SourcebookType.Homebrew, SourcebookType.ThirdParty, SourcebookType.Community ]
+						.map(type => ({ type: type, sourcebooks: props.sourcebooks.filter(sb => sb.type === type).filter(sb => SourcebookLogic.getElements(sb).length > 0) }))
+						.filter(item => item.sourcebooks.length > 0)
+						.map(item => (
+							<div key={item.type} className='sourcebook-type-section'>
+								<HeaderText level={3}>{item.type} Sourcebooks</HeaderText>
+								{
+									item.sourcebooks.map(sb => (
 										<Toggle
 											key={sb.id}
 											label={<Field label={sb.name || 'Unnamed Sourcebook'} value={<Markdown text={sb.description} useSpan={true} />} />}
@@ -76,9 +78,9 @@ export const StartSection = (props: Props) => {
 											onChange={value => toggleSourcebook(value, sb.id)}
 										/>
 									))
-							}
-						</div>
-					))
+								}
+							</div>
+						))
 				}
 				<Divider />
 				<Flex align='center' gap={10}>

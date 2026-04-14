@@ -1,5 +1,5 @@
 import { Alert, Button, Drawer, Popover, Segmented, Select, Space, Tabs, Upload } from 'antd';
-import { CaretDownOutlined, CaretUpOutlined, CopyOutlined, DownloadOutlined, EditOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { CaretDownOutlined, CaretUpOutlined, CopyOutlined, DownloadOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Ability } from '@/models/ability';
 import { AbilityEditPanel } from '@/components/panels/edit/ability-edit/ability-edit-panel';
 import { Characteristic } from '@/enums/characteristic';
@@ -11,13 +11,11 @@ import { ErrorBoundary } from '@/components/controls/error-boundary/error-bounda
 import { Expander } from '@/components/controls/expander/expander';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { Feature } from '@/models/feature';
-import { FeatureEditPanel } from '@/components/panels/edit/feature-edit/feature-edit-panel';
-import { FeatureLogic } from '@/logic/feature-logic';
+import { FeatureListEditPanel } from '@/components/panels/edit/feature-list-edit/feature-list-edit-panel';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { HeroClass } from '@/models/class';
-import { MarkdownEditor } from '@/components/controls/markdown/markdown';
 import { Modal } from '@/components/modals/modal/modal';
-import { NameGenerator } from '@/utils/name-generator';
+import { NameDescEditPanel } from '@/components/panels/edit/name-desc-edit/name-desc-edit-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Options } from '@/models/options';
 import { PanelMode } from '@/enums/panel-mode';
@@ -47,36 +45,19 @@ export const ClassEditPanel = (props: Props) => {
 	const [ drawerOpen, setDrawerOpen ] = useState<boolean>(false);
 
 	const getNameAndDescriptionSection = () => {
-		const setName = (value: string) => {
+		const onChange = (name: string, desc: string) => {
 			const copy = Utils.copy(heroClass);
-			copy.name = value;
-			setHeroClass(copy);
-			props.onChange(copy);
-		};
-
-		const setDescription = (value: string) => {
-			const copy = Utils.copy(heroClass);
-			copy.description = value;
+			copy.name = name;
+			copy.description = desc;
 			setHeroClass(copy);
 			props.onChange(copy);
 		};
 
 		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<HeaderText>Name</HeaderText>
-				<Space.Compact style={{ width: '100%' }}>
-					<TextInput
-						status={heroClass.name === '' ? 'warning' : ''}
-						placeholder='Name'
-						allowClear={true}
-						value={heroClass.name}
-						onChange={setName}
-					/>
-					<Button icon={<ThunderboltOutlined />} onClick={() => setName(NameGenerator.generateName())} />
-				</Space.Compact>
-				<HeaderText>Description</HeaderText>
-				<MarkdownEditor value={heroClass.description} onChange={setDescription} />
-			</Space>
+			<NameDescEditPanel
+				element={heroClass}
+				onChange={onChange}
+			/>
 		);
 	};
 
@@ -215,102 +196,30 @@ export const ClassEditPanel = (props: Props) => {
 	};
 
 	const getFeaturesByLevelEditSection = () => {
-		const addFeature = (level: number) => {
+		const onChange = (level: number, features: Feature[]) => {
 			const copy = Utils.copy(heroClass);
 			copy.featuresByLevel
 				.filter(lvl => lvl.level === level)
-				.forEach(lvl => {
-					lvl.features.push(FactoryLogic.feature.create({
-						id: Utils.guid(),
-						name: '',
-						description: ''
-					}));
-				});
-			setHeroClass(copy);
-			props.onChange(copy);
-		};
-
-		const changeFeature = (level: number, feature: Feature) => {
-			const copy = Utils.copy(heroClass);
-			copy.featuresByLevel
-				.filter(lvl => lvl.level === level)
-				.forEach(lvl => {
-					const index = lvl.features.findIndex(f => f.id === feature.id);
-					if (index !== -1) {
-						lvl.features[index] = feature;
-					}
-				});
-			setHeroClass(copy);
-			props.onChange(copy);
-		};
-
-		const moveFeature = (level: number, feature: Feature, direction: 'up' | 'down') => {
-			const copy = Utils.copy(heroClass);
-			copy.featuresByLevel
-				.filter(lvl => lvl.level === level)
-				.forEach(lvl => {
-					const index = lvl.features.findIndex(f => f.id === feature.id);
-					lvl.features = Collections.move(lvl.features, index, direction);
-				});
-			setHeroClass(copy);
-			props.onChange(copy);
-		};
-
-		const deleteFeature = (level: number, feature: Feature) => {
-			const copy = Utils.copy(heroClass);
-			copy.featuresByLevel
-				.filter(lvl => lvl.level === level)
-				.forEach(lvl => {
-					lvl.features = lvl.features.filter(f => f.id !== feature.id);
-				});
+				.forEach(lvl => lvl.features = Utils.copy(features));
 			setHeroClass(copy);
 			props.onChange(copy);
 		};
 
 		return (
-			<>
+			<Space orientation='vertical' style={{ width: '100%' }}>
 				{
 					heroClass.featuresByLevel.map(lvl => (
-						<div key={lvl.level}>
-							<HeaderText
-								extra={
-									<Button type='text' icon={<PlusOutlined />} onClick={() => addFeature(lvl.level)} />
-								}
-							>
-								Level {lvl.level.toString()}
-							</HeaderText>
-							<Space orientation='vertical' style={{ width: '100%' }}>
-								{
-									lvl.features.map(f => (
-										<Expander
-											key={f.id}
-											title={f.name || 'Unnamed Feature'}
-											tags={[ FeatureLogic.getFeatureTag(f) ]}
-											extra={[
-												<Button key='up' type='text' title='Move Up' icon={<CaretUpOutlined />} onClick={e => { e.stopPropagation(); moveFeature(lvl.level, f, 'up'); }} />,
-												<Button key='down' type='text' title='Move Down' icon={<CaretDownOutlined />} onClick={e => { e.stopPropagation(); moveFeature(lvl.level, f, 'down'); }} />,
-												<DangerButton key='delete' mode='clear' onConfirm={e => { e.stopPropagation(); deleteFeature(lvl.level, f); }} />
-											]}
-										>
-											<FeatureEditPanel
-												feature={f}
-												sourcebooks={props.sourcebooks}
-												options={props.options}
-												onChange={feature => changeFeature(lvl.level, feature)}
-											/>
-										</Expander>
-									))
-								}
-								{
-									lvl.features.length === 0 ?
-										<Empty />
-										: null
-								}
-							</Space>
-						</div>
+						<FeatureListEditPanel
+							key={lvl.level}
+							title={`Level ${lvl.level}`}
+							features={lvl.features}
+							sourcebooks={props.sourcebooks}
+							options={props.options}
+							onChange={features => onChange(lvl.level, features)}
+						/>
 					))
 				}
-			</>
+			</Space>
 		);
 	};
 
@@ -594,6 +503,7 @@ export const ClassEditPanel = (props: Props) => {
 					</div>
 					:
 					<SubClassEditPanel
+						key={subclassID}
 						subClass={heroClass.subclasses.find(sc => sc.id === subclassID) as SubClass}
 						sourcebooks={props.sourcebooks}
 						options={props.options}

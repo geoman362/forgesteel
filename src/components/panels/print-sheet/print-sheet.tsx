@@ -4,6 +4,7 @@ import { Terrain, TerrainSection } from '@/models/terrain';
 import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
 import { AbilityUsage } from '@/enums/ability-usage';
 import { Ancestry } from '@/models/ancestry';
+import { AncestryLogic } from '@/logic/ancestry-logic';
 import { Career } from '@/models/career';
 import { Characteristic } from '@/enums/characteristic';
 import { Complication } from '@/models/complication';
@@ -13,7 +14,6 @@ import { DamageType } from '@/enums/damage-type';
 import { Domain } from '@/models/domain';
 import { Element } from '@/models/element';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Feature } from '@/models/feature';
 import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';
 import { FeatureType } from '@/enums/feature-type';
 import { Field } from '@/components/controls/field/field';
@@ -218,29 +218,23 @@ interface AncestryProps {
 };
 
 const AncestrySheet = (props: AncestryProps) => {
-	const isSignatureFeature = (feature: Feature) => {
-		return !isPurchasedFeature(feature);
-	};
-
-	const isPurchasedFeature = (feature: Feature) => {
-		return (feature.type === FeatureType.Choice) && (feature.data.count === 'ancestry');
-	};
-
 	return (
 		<>
 			<HeaderText level={1}>
 				{props.ancestry.name || 'Unnamed Ancestry'}
 			</HeaderText>
 			<Markdown text={props.ancestry.description} />
+			<HeaderText level={1}>Signature Traits</HeaderText>
 			{
-				props.ancestry.features.filter(isSignatureFeature).map(f => (
+				AncestryLogic.getSignatureFeatures(props.ancestry).map(f => (
 					<FeaturePanel key={f.id} feature={f} options={props.options} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
 				))
 			}
+			<HeaderText level={1}>Purchased Traits</HeaderText>
 			<Field label='Ancestry Points' value={props.ancestry.ancestryPoints} />
 			{
-				props.ancestry.features.filter(isPurchasedFeature).map(f => (
-					<FeaturePanel key={f.id} feature={f} options={props.options} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
+				AncestryLogic.getPurchasedFeatures(props.ancestry).map(f => (
+					<FeaturePanel key={f.feature.id} feature={f.feature} cost={f.value} options={props.options} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
 				))
 			}
 			{
@@ -531,16 +525,29 @@ const MonsterGroupSheet = (props: MonsterGroupProps) => {
 						<div className='ds-text'>
 							At the start of any {props.monsterGroup.name}'s turn, you can spend malice to activate one of the following features.
 						</div>
-						{props.monsterGroup.malice.map(m =>
-							<FeaturePanel
-								key={m.id}
-								feature={m}
-								options={props.options}
-								mode={PanelMode.Full}
-								cost={m.type === FeatureType.MaliceAbility ? m.data.ability.cost : m.data.cost}
-								repeatable={m.type === FeatureType.Malice ? m.data.repeatable : undefined}
-							/>
-						)}
+						{
+							props.monsterGroup.malice.map(m => {
+								let cost = undefined;
+								switch (m.type) {
+									case FeatureType.Malice:
+										cost = m.data.cost;
+										break;
+									case FeatureType.MaliceAbility:
+										cost = m.data.ability.cost;
+										break;
+								}
+								return (
+									<FeaturePanel
+										key={m.id}
+										feature={m}
+										options={props.options}
+										mode={PanelMode.Full}
+										cost={cost}
+										repeatable={m.type === FeatureType.Malice ? m.data.repeatable : undefined}
+									/>
+								);
+							})
+						}
 					</>
 					: null
 			}

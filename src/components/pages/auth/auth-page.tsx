@@ -1,11 +1,13 @@
+import { Alert, Button, Divider, Space } from 'antd';
+import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
 import { useEffect, useState } from 'react';
-import { AppFooter } from '@/components/panels/app-footer/app-footer';
 import { AppHeader } from '@/components/panels/app-header/app-header';
-import { Button } from 'antd';
 import { CheckIcon } from '@/components/controls/check-icon/check-icon';
 import { ConnectionSettings } from '@/models/connection-settings';
-import { DataService } from '@/utils/data-service';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
+import { Options } from '@/models/options';
+import { PatreonLogic } from '@/logic/patreon-logic';
+import { PatreonService } from '@/service/patreon-service';
 import { PatreonSession } from '@/models/patreon-connection';
 import { PatreonStatusPanel } from '@/components/panels/connection-settings/patreon-status-panel';
 import { Utils } from '@/utils/utils';
@@ -17,18 +19,17 @@ import './auth-page.scss';
 
 interface Props {
 	connectionSettings: ConnectionSettings;
-	dataService: DataService;
-	highlightAbout: boolean;
-	showReference: () => void;
-	showRoll: () => void;
-	showAbout: () => void;
-	showSettings: () => void;
+	options: Options;
+	params: FooterParams;
 	setConnectionSettings: (settings: ConnectionSettings) => void
 }
 
 export const AuthPage = (props: Props) => {
 	const [ searchParams ] = useSearchParams();
 	const navigation = useNavigation();
+	const service = new PatreonService();
+
+	const [ showTransferButton, setShowTransferButton ] = useState<boolean>(false);
 
 	const [ connectionState, setConnectionState ] = useState<'pending' | 'success' | 'failure' | undefined>(undefined);
 	const [ patreonSession, setPatreonSession ] = useState<PatreonSession | null>(null);
@@ -42,6 +43,7 @@ export const AuthPage = (props: Props) => {
 
 	const updatePatronStatus = (responseData: PatreonSession) => {
 		if (responseData.authenticated) {
+			setShowTransferButton(PatreonLogic.hasWarehouseAccess(responseData));
 			setConnected();
 			setPatreonSession(responseData);
 		} else {
@@ -56,14 +58,14 @@ export const AuthPage = (props: Props) => {
 		const state = searchParams.get('state');
 
 		if (code && state) {
-			props.dataService.finishPatreonLogin(code, state)
+			service.finishPatreonLogin(code, state)
 				.then(updatePatronStatus)
 				.catch(reason => {
 					console.error(reason);
 					setConnectionState('failure');
 				});
 		} else {
-			props.dataService.getPatreonSession().then(updatePatronStatus);
+			service.getPatreonSession().then(updatePatronStatus);
 		}
 	};
 
@@ -75,8 +77,42 @@ export const AuthPage = (props: Props) => {
 	},
 	// dependencies here needs to be an empty array so that it only runs once
 	// otherwise, it runs several times as things change.
-	// eslint-disable-next-line react-hooks/exhaustive-deps
 	[]);
+
+	const getTransferButton = () => {
+		if (showTransferButton) {
+			return (
+				<>
+					<Space orientation='vertical' style={{ width: '400px' }}>
+						<Alert
+							type='info'
+							title='Patron Warehouse'
+							description='You are a patron with automatic access to the Patron cloud storage - you can transfer your local data to the cloud here:'
+							showIcon={true}
+						/>
+						<Button
+							block={true}
+							type='primary'
+							onClick={transferAndReload}
+						>
+							Transfer Data
+						</Button>
+					</Space>
+					<Divider size='small' />
+				</>
+			);
+		}
+	};
+
+	const transferAndReload = () => {
+		navigation.goToTransfer();
+		location.reload();
+	};
+
+	const returnAndReload = () => {
+		navigation.goToWelcome();
+		location.reload();
+	};
 
 	return (
 		<ErrorBoundary>
@@ -98,18 +134,16 @@ export const AuthPage = (props: Props) => {
 								);
 							})
 						}
-						<Button block={true} type='primary' onClick={() => navigation.goToWelcome()}>
+						{getTransferButton()}
+						<Button block={true} type='primary' onClick={returnAndReload}>
 							Return
 						</Button>
 					</div>
 				</div>
 				<AppFooter
 					page='welcome'
-					highlightAbout={props.highlightAbout}
-					showReference={props.showReference}
-					showRoll={props.showRoll}
-					showAbout={props.showAbout}
-					showSettings={props.showSettings}
+					options={props.options}
+					params={props.params}
 				/>
 			</div>
 		</ErrorBoundary>

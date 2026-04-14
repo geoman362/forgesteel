@@ -39,13 +39,9 @@ export const InfoKit = (props: InfoProps) => {
 		);
 	}
 
-	if (!props.feature.description) {
-		return (
-			<div className='ds-text'>Choose {props.data.count > 1 ? props.data.count : 'a'} {props.data.types.join(', ')} {props.data.count > 1 ? 'kits' : 'kit'}.</div>
-		);
-	}
-
-	return null;
+	return (
+		<div className='ds-text'>Choose {props.data.count > 1 ? props.data.count : 'a'} {props.data.types.join(', ')} {props.data.count > 1 ? 'kits' : 'kit'}.</div>
+	);
 };
 
 interface EditProps {
@@ -79,7 +75,7 @@ export const EditKit = (props: EditProps) => {
 				style={{ width: '100%' }}
 				status={data.types.length === 0 ? 'warning' : ''}
 				placeholder='Kit types'
-				mode='multiple'
+				mode='tags'
 				allowClear={true}
 				options={Collections.sort(Collections.distinct(SourcebookLogic.getKits(props.sourcebooks).map(k => k.type), x => x), x => x).map(type => ({ value: type, label: !type ? 'Standard' : type }))}
 				optionRender={option => <div className='ds-text'>{option.data.label}</div>}
